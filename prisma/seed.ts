@@ -46,7 +46,7 @@ async function main() {
     { name: "Vest - Blazer", slug: "vest-blazer", image: "https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&q=80", sortOrder: 2 },
     { name: "Đồ thể thao", slug: "do-the-thao", image: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=600&q=80", sortOrder: 3 },
     { name: "Đồ bơi", slug: "do-boi", image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&q=80", sortOrder: 4 },
-    { name: "Đồ ngủ", slug: "do-ngu", image: "https://images.unsplash.com/photo-1617331721458-bd3bd3f9c619?w=600&q=80", sortOrder: 5 },
+    { name: "Đồ ngủ", slug: "do-ngu", image: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80", sortOrder: 5 },
     { name: "Áo sơ mi", slug: "ao-so-mi", image: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=600&q=80", sortOrder: 6 },
   ];
 

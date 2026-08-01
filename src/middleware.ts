@@ -1,26 +1,23 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { auth } from "@/lib/auth";
 
-export async function middleware(req: NextRequest) {
+export default auth((req) => {
   const { pathname } = req.nextUrl;
 
-  if (pathname.startsWith("/admin")) {
-    const token = await getToken({
-      req,
-      secret: process.env.AUTH_SECRET,
-    });
-
-    if (!token || token.role !== "ADMIN") {
-      const url = req.nextUrl.clone();
-      url.pathname = "/dang-nhap";
-      url.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(url);
-    }
+  if (!pathname.startsWith("/admin")) {
+    return NextResponse.next();
   }
 
-  return NextResponse.next();
-}
+  const role = req.auth?.user?.role;
+  if (role === "ADMIN") {
+    return NextResponse.next();
+  }
+
+  const url = req.nextUrl.clone();
+  url.pathname = "/dang-nhap";
+  url.searchParams.set("callbackUrl", pathname);
+  return NextResponse.redirect(url);
+});
 
 export const config = {
   matcher: ["/admin/:path*"],
