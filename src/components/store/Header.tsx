@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { getOrCreateCart, cartTotals } from "@/lib/cart";
+import { getCart, cartTotals } from "@/lib/cart";
 import { prisma } from "@/lib/db";
 
 const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "LUNARA";
 
 export async function Header() {
   const session = await auth();
-  const cart = await getOrCreateCart();
+  const cart = await getCart();
   const { count } = cartTotals(cart.items);
   const categories = await prisma.category.findMany({
     orderBy: { sortOrder: "asc" },

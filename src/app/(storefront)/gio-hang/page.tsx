@@ -1,13 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getOrCreateCart, cartTotals } from "@/lib/cart";
+import { getCart, cartTotals } from "@/lib/cart";
 import { formatVnd } from "@/lib/utils";
 import { CartControls } from "@/components/store/CartControls";
 
 export const metadata = { title: "Giỏ hàng" };
 
 export default async function CartPage() {
-  const cart = await getOrCreateCart();
+  const cart = await getCart();
   const { subtotal, count } = cartTotals(cart.items);
   const shipping = subtotal >= 300000 || subtotal === 0 ? 0 : 25000;
 

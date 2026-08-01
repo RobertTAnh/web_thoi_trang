@@ -53,7 +53,8 @@ git push -u origin main
 4. Vào service Web → **Variables**:
    - `DATABASE_URL` = reference từ Postgres (`${{Postgres.DATABASE_URL}}`)
    - `AUTH_SECRET` = chuỗi random dài (vd generate bằng `openssl rand -base64 32`)
-   - `AUTH_URL` = URL public Railway (sau khi có domain, vd `https://xxx.up.railway.app`)
+   - `AUTH_URL` = URL public Railway (vd `https://webthoitrang-production-xxxx.up.railway.app`) — **không** dùng localhost
+   - `AUTH_TRUST_HOST` = `true` (khuyến nghị trên Railway)
    - `NEXT_PUBLIC_BRAND_NAME` = `LUNARA` (tuỳ chọn)
    - `NEXT_PUBLIC_HOTLINE` = hotline (tuỳ chọn)
    - Sapo vars để trống cũng được lúc đầu

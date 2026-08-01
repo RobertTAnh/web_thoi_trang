@@ -10,6 +10,8 @@ const credentialsSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // Cần cho reverse proxy (Railway / Vercel)
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/dang-nhap",

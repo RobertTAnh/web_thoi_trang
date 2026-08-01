@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { getOrCreateCart, cartTotals } from "@/lib/cart";
+import { getCart, cartTotals } from "@/lib/cart";
 import { formatVnd } from "@/lib/utils";
 import { checkoutAction } from "@/app/actions/checkout";
 
 export const metadata = { title: "Thanh toán" };
 
 export default async function CheckoutPage() {
-  const cart = await getOrCreateCart();
+  const cart = await getCart();
   if (!cart.items.length) redirect("/gio-hang");
 
   const session = await auth();
