@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  COD
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  REFUNDED
+}
+
+enum SyncStatus {
+  PENDING_SYNC
+  SYNCED
+  SYNC_FAILED
+  SKIPPED
+}
+
+enum SyncLogType {
+  PRODUCTS
+  INVENTORY
+  ORDER_PUSH
+  WEBHOOK
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String?
+  phone        String?
+  role         Role      @default(CUSTOMER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  orders       Order[]
+  carts        Cart[]
+  apiKeys      ApiKey[]
+}
+
+model Category {
+  id              String     @id @default(cuid())
+  name            String
+  slug            String     @unique
+  description     String?
+  image           String?
+  sapoCollectionId String?   @unique
+  parentId        String?
+  parent          Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children        Category[] @relation("CategoryTree")
+  products        Product[]
+  sortOrder       Int        @default(0)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model Product {
+  id            String           @id @default(cuid())
+  name          String
+  slug          String           @unique
+  description   String?
+  brand         String?
+  images        String[]
+  sapoProductId String?          @unique
+  published     Boolean          @default(true)
+  featured      Boolean          @default(false)
+  categoryId    String?
+  category      Category?        @relation(fields: [categoryId], references: [id])
+  variants      ProductVariant[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([published])
+  @@index([categoryId])
+}
+
+model ProductVariant {
+  id            String     @id @default(cuid())
+  productId     String
+  product       Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sapoVariantId String?    @unique
+  sku           String?
+  title         String?
+  color         String?
+  size          String?
+  price         Int
+  compareAt     Int?
+  stock         Int        @default(0)
+  image         String?
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([productId])
+  @@index([sku])
+}
+
+model Coupon {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  description   String?
+  percentOff    Int?
+  amountOff     Int?
+  minOrder      Int       @default(0)
+  maxDiscount   Int?
+  freeShip      Boolean   @default(false)
+  active        Boolean   @default(true)
+  startsAt      DateTime?
+  endsAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  orders        Order[]
+}
+
+model FlashSale {
+  id        String   @id @default(cuid())
+  title     String
+  percentOff Int
+  startsAt  DateTime
+  endsAt    DateTime
+  active    Boolean  @default(true)
+  tabLabels String[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String?
+  user      User?      @relation(fields: [userId], references: [id])
+  sessionId String?    @unique
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model CartItem {
+  id        String         @id @default(cuid())
+  cartId    String
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  quantity  Int            @default(1)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([cartId, variantId])
+}
+
+model Order {
+  id              String        @id @default(cuid())
+  orderNumber     String        @unique
+  userId          String?
+  user            User?         @relation(fields: [userId], references: [id])
+  email           String
+  phone           String
+  customerName    String
+  address         String
+  city            String?
+  note            String?
+  status          OrderStatus   @default(PENDING)
+  paymentMethod   PaymentMethod @default(COD)
+  paymentStatus   PaymentStatus @default(UNPAID)
+  subtotal        Int
+  shippingFee     Int           @default(0)
+  discount        Int           @default(0)
+  total           Int
+  couponId        String?
+  coupon          Coupon?       @relation(fields: [couponId], references: [id])
+  sapoOrderId     String?       @unique
+  syncStatus      SyncStatus    @default(PENDING_SYNC)
+  syncError       String?
+  items           OrderItem[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status])
+  @@index([syncStatus])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String         @id @default(cuid())
+  orderId   String
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  name      String
+  sku       String?
+  color     String?
+  size      String?
+  price     Int
+  quantity  Int
+  image     String?
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  content     String
+  coverImage  String?
+  published   Boolean  @default(true)
+  readingMins Int      @default(3)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  name      String
+  content   String
+  avatar    String?
+  rating    Int      @default(5)
+  published Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model Lookbook {
+  id          String   @id @default(cuid())
+  title       String
+  image       String
+  href        String?
+  sortOrder   Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model Banner {
+  id        String   @id @default(cuid())
+  title     String?
+  image     String
+  href      String?
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  keyHash    String    @unique
+  prefix     String
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id])
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model SyncLog {
+  id        String      @id @default(cuid())
+  type      SyncLogType
+  status    String
+  message   String?
+  meta      Json?
+  createdAt DateTime    @default(now())
+
+  @@index([type, createdAt])
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
