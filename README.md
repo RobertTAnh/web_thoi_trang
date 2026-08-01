@@ -58,8 +58,9 @@ git push -u origin main
    - `NEXT_PUBLIC_HOTLINE` = hotline (tuỳ chọn)
    - Sapo vars để trống cũng được lúc đầu
 
-5. Deploy lại nếu cần (Railway dùng `railway.toml`: build = `npm run build`, start = `npm run start`)
-6. Sau deploy thành công, **cập nhật `AUTH_URL`** đúng domain public rồi redeploy (hoặc restart)
+5. **Quan trọng:** `DATABASE_URL` phải có trên service Web (Reference từ Postgres). Nếu thiếu, start sẽ fail.
+6. Deploy lại nếu cần (Railway dùng `railway.toml`: build = `npm run build`, start = `npm run start` — schema sync lúc **start**, không lúc build)
+7. Sau deploy thành công, **cập nhật `AUTH_URL`** đúng domain public rồi redeploy (hoặc restart)
 
 ### 3. Seed admin trên production (1 lần)
 
@@ -80,7 +81,7 @@ Hoặc mở tab **Shell** trên service và chạy `npm run db:seed`.
 
 ### Lưu ý
 
-- Build đã chạy `prisma db push` — schema tự đồng bộ mỗi lần deploy
+- Start chạy `prisma db push` — schema tự đồng bộ mỗi lần container khởi động (cần `DATABASE_URL` lúc runtime)
 - Không commit file `.env` (đã nằm trong `.gitignore`)
 - Spending limit: bật trên Railway để tránh phát sinh ngoài dự kiến
 
