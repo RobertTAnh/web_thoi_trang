@@ -1,4 +1,4 @@
-const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "LUNARA";
+const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "Tisora";
 
 export const metadata = { title: "Giới thiệu" };
 

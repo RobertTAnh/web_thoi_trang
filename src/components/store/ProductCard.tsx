@@ -32,53 +32,53 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <article className="product-card group">
-      <div className="relative aspect-[3/4] overflow-hidden bg-line/40">
+      <div className="relative aspect-[3/4] overflow-hidden bg-[#f5f5f5]">
         <Link href={`/products/${product.slug}`}>
           <Image
             src={image}
             alt={product.name}
             fill
-            className="object-cover transition duration-500 group-hover:scale-105"
+            className="object-cover transition duration-500 group-hover:scale-[1.03]"
             sizes="(max-width:768px) 50vw, 25vw"
           />
         </Link>
         {pct > 0 && (
-          <span className="absolute top-3 left-3 bg-sale px-2 py-1 text-xs font-medium text-white">
-            -{pct}%
-          </span>
+          <span className="badge-sale absolute top-2 left-2">-{pct}%</span>
         )}
-        <div className="product-actions absolute right-3 bottom-3 left-3 flex gap-2">
+        <div className="product-actions absolute right-2 bottom-2 left-2 flex gap-1">
           <AddToCartButton
             variantId={variant.id}
-            className="flex-1 bg-ink px-3 py-2 text-center text-xs tracking-wide text-white uppercase"
+            className="btn-dark flex-1 px-2 py-2 text-center text-[11px]"
+            label="Tùy chọn"
           />
           <Link
             href={`/products/${product.slug}`}
-            className="bg-white px-3 py-2 text-xs tracking-wide text-ink uppercase"
+            className="btn-primary px-3 py-2 text-[11px]"
           >
-            Xem
+            Xem nhanh
           </Link>
         </div>
       </div>
-      <div className="mt-3 space-y-1">
+      <div className="mt-2.5 space-y-1 text-center">
         {product.brand && (
-          <p className="text-[11px] tracking-[0.16em] text-muted uppercase">
-            {product.brand}
-          </p>
+          <p className="text-[11px] text-muted">{product.brand}</p>
         )}
-        <Link href={`/products/${product.slug}`} className="block text-sm hover:text-accent">
+        <Link
+          href={`/products/${product.slug}`}
+          className="block text-[13px] font-medium hover:text-accent"
+        >
           {product.name}
         </Link>
-        <div className="flex items-baseline gap-2">
-          <span className="text-sm font-medium">{formatVnd(variant.price)}</span>
+        <div className="flex items-center justify-center gap-2">
+          <span className="price-sale text-[15px]">{formatVnd(variant.price)}</span>
           {variant.compareAt && variant.compareAt > variant.price && (
-            <span className="text-xs text-muted line-through">
+            <span className="text-[13px] text-muted line-through">
               {formatVnd(variant.compareAt)}
             </span>
           )}
         </div>
         {colors.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 pt-1">
+          <div className="flex flex-wrap justify-center gap-1 pt-1">
             {colors.slice(0, 3).map((c) => (
               <span
                 key={c}

@@ -7,21 +7,33 @@ async function main() {
   const passwordHash = await bcrypt.hash("admin123", 10);
 
   const admin = await prisma.user.upsert({
+    where: { email: "admin@tisora.vn" },
+    update: { name: "Admin Tisora", passwordHash },
+    create: {
+      email: "admin@tisora.vn",
+      name: "Admin Tisora",
+      passwordHash,
+      role: Role.ADMIN,
+    },
+  });
+
+  // Giữ admin cũ nếu đã seed trước đó
+  await prisma.user.upsert({
     where: { email: "admin@lunara.vn" },
-    update: {},
+    update: { role: Role.ADMIN, passwordHash },
     create: {
       email: "admin@lunara.vn",
-      name: "Admin LUNARA",
+      name: "Admin Tisora",
       passwordHash,
       role: Role.ADMIN,
     },
   });
 
   await prisma.user.upsert({
-    where: { email: "khach@lunara.vn" },
+    where: { email: "khach@tisora.vn" },
     update: {},
     create: {
-      email: "khach@lunara.vn",
+      email: "khach@tisora.vn",
       name: "Khách Demo",
       phone: "0901234567",
       passwordHash: await bcrypt.hash("khach123", 10),
@@ -51,9 +63,33 @@ async function main() {
 
   const products = [
     {
+      name: "Đầm voan tầng Ruby",
+      slug: "dam-voan-tang-ruby",
+      brand: "Tisora",
+      description:
+        "Đầm dập ly cổ V vạt trước đáp chéo, tay sát nách. Eo chiết. Tùng váy dài qua mắt cá chân được xếp tầng tạo xòe. Xẻ gấu dài 1 bên tạo điểm thu hút. Cài khóa kéo ẩn sau lưng.\n\nBên ngoài bằng lớp vải voan được dập ly cố định, bên trong có lót lụa đồng màu.\n\nMàu sắc: Đỏ Ruby - Xanh Atlantic\n\nThông số người mẫu (size XS):\n- Chiều cao: 167cm\n- Vòng eo: 61 cm\n- Vòng hông: 88cm\n- Vòng ngực: 78cm\n\nChất liệu & bảo quản:\n- Vải dệt kim: sau khi giặt sản phẩm phải được phơi ngang tránh bai dãn.",
+      images: [
+        "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=900&q=80",
+        "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=900&q=80",
+        "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=900&q=80",
+        "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=900&q=80",
+        "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=900&q=80",
+      ],
+      featured: true,
+      categoryId: dam.id,
+      variants: [
+        { color: "Đỏ", size: "S", price: 3890000, compareAt: 7780000, stock: 8, sku: "VA89665-DO-S" },
+        { color: "Đỏ", size: "M", price: 3890000, compareAt: 7780000, stock: 10, sku: "VA89665-DO-M" },
+        { color: "Đỏ", size: "L", price: 3890000, compareAt: 7780000, stock: 6, sku: "VA89665-DO-L" },
+        { color: "Xanh rêu", size: "S", price: 3890000, compareAt: 7780000, stock: 5, sku: "VA89665-XR-S" },
+        { color: "Xanh rêu", size: "M", price: 3890000, compareAt: 7780000, stock: 7, sku: "VA89665-XR-M" },
+        { color: "Xanh rêu", size: "L", price: 3890000, compareAt: 7780000, stock: 4, sku: "VA89665-XR-L" },
+      ],
+    },
+    {
       name: "Váy Arta Satin",
       slug: "vay-arta-satin",
-      brand: "LUNARA",
+      brand: "Tisora",
       description: "Váy satin ôm dáng, phù hợp đi tiệc và event. Chất liệu mềm, rũ nhẹ.",
       images: [
         "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800&q=80",
@@ -71,7 +107,7 @@ async function main() {
     {
       name: "Váy Billy Knit",
       slug: "vay-billy-knit",
-      brand: "LUNARA",
+      brand: "Tisora",
       description: "Váy len dệt kim co giãn nhẹ, form body tôn dáng.",
       images: ["https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=800&q=80"],
       featured: true,
@@ -84,7 +120,7 @@ async function main() {
     {
       name: "Váy kiểu Dasha",
       slug: "vay-kieu-dasha",
-      brand: "LUNARA",
+      brand: "Tisora",
       description: "Thiết kế cổ điển với chi tiết xếp ly tinh tế.",
       images: ["https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=800&q=80"],
       featured: true,
@@ -97,7 +133,7 @@ async function main() {
     {
       name: "Đầm dạ hội Raya",
       slug: "dam-da-hoi-raya",
-      brand: "LUNARA",
+      brand: "Tisora",
       description: "Đầm dạ hội cắt xẻ tinh tế, phù hợp sự kiện sang trọng.",
       images: ["https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&q=80"],
       featured: true,
@@ -110,7 +146,7 @@ async function main() {
     {
       name: "Đầm cổ vuông Laura",
       slug: "dam-co-vuong-laura",
-      brand: "LUNARA",
+      brand: "Tisora",
       description: "Đầm cổ vuông nữ tính, dễ phối phụ kiện.",
       images: ["https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=800&q=80"],
       featured: true,
@@ -123,7 +159,7 @@ async function main() {
     {
       name: "Áo sơ mi Will Oversize",
       slug: "ao-so-mi-will-oversize",
-      brand: "LUNARA",
+      brand: "Tisora",
       description: "Sơ mi oversize form rộng, chất cotton mềm mát.",
       images: ["https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=800&q=80"],
       featured: false,
@@ -163,18 +199,25 @@ async function main() {
 
   const coupons = [
     {
-      code: "LUNARA10",
+      code: "TISORA10",
       description: "Mã giảm 10% cho đơn hàng tối thiểu 2 triệu",
       percentOff: 10,
       minOrder: 2000000,
       maxDiscount: 500000,
     },
     {
-      code: "LUNARA15",
+      code: "TISORA15",
       description: "Mã giảm 15% cho đơn hàng tối thiểu 5 triệu",
       percentOff: 15,
       minOrder: 5000000,
       maxDiscount: 2000000,
+    },
+    {
+      code: "TISORA",
+      description: "Thêm 5% cho mọi đơn hàng",
+      percentOff: 5,
+      minOrder: 0,
+      maxDiscount: 300000,
     },
     {
       code: "FREESHIP",
@@ -188,7 +231,7 @@ async function main() {
     await prisma.coupon.upsert({
       where: { code: c.code },
       update: c,
-      create: c,
+      create: { ...c, freeShip: c.freeShip ?? false },
     });
   }
 
@@ -287,7 +330,7 @@ async function main() {
       slug: "4-xu-huong-trang-phuc-he",
       excerpt: "Thời tiết nóng bức đòi hỏi chúng ta cập nhật tủ quần áo với những thiết kế và chất liệu mới.",
       content:
-        "Mùa hè là lúc linen, croptop và váy maxi lên ngôi. Hãy ưu tiên chất liệu thoáng mát và màu sắc tươi sáng để giữ phong cách vừa thanh lịch vừa năng động.",
+        "Mùa hè là lúc linen, croptop và váy maxi lên ngôi. Hãy ưu tiên chất liệu thoáng mát và màu sắc tươi sáng.",
       coverImage: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80",
     },
     {
@@ -295,16 +338,22 @@ async function main() {
       slug: "bi-kip-mix-match-mua-he",
       excerpt: "Những công thức phối đồ đơn giản giúp bạn nổi bật mỗi ngày.",
       content:
-        "Công thức cơ bản: áo oversize + chân váy ngắn, hoặc sơ mi linen + quần ống rộng. Điểm nhấn nằm ở giày và túi xách tối giản.",
+        "Công thức cơ bản: áo oversize + chân váy ngắn, hoặc sơ mi linen + quần ống rộng.",
       coverImage: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80",
     },
     {
       title: "Nghệ thuật tiết kiệm từ những tín đồ sống tối giản",
       slug: "nghe-thuat-tiet-kiem-toi-gian",
       excerpt: "Mẹo quản lý tài chính chặt chẽ nhưng vẫn cảm thấy cuộc sống nhẹ nhàng.",
-      content:
-        "Mua ít nhưng chọn kỹ, ưu tiên chất liệu bền và form dáng linh hoạt giúp bạn tiết kiệm lâu dài mà tủ đồ vẫn luôn chỉn chu.",
+      content: "Mua ít nhưng chọn kỹ, ưu tiên chất liệu bền và form dáng linh hoạt.",
       coverImage: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&q=80",
+    },
+    {
+      title: "Xu hướng đầm dự tiệc mùa hè",
+      slug: "xu-huong-dam-du-tiec-mua-he",
+      excerpt: "Những thiết kế xẻ cao, voan tầng đang được ưa chuộng.",
+      content: "Đầm voan tầng và cut-out là điểm nhấn cho mọi buổi tiệc.",
+      coverImage: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&q=80",
     },
   ];
 
@@ -316,7 +365,8 @@ async function main() {
     });
   }
 
-  console.log("Seed OK. Admin:", admin.email, "/ admin123");
+  console.log("Seed OK — brand Tisora. Admin:", admin.email, "/ admin123");
+  console.log("PDP demo: /products/dam-voan-tang-ruby");
 }
 
 main()

@@ -1,6 +1,6 @@
-# LUNARA — Fashion Shop + Sapo Sync
+# Tisora — Fashion Shop + Sapo Sync
 
-Next.js e-commerce thời trang: storefront, admin `/admin`, REST API `/api/v1`, đồng bộ Sapo.
+Next.js e-commerce thời trang (layout tham chiếu EGA Style / Sapo): storefront, admin `/admin`, REST API `/api/v1`, đồng bộ Sapo.
 
 ## Stack
 
@@ -26,8 +26,8 @@ npm run dev
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@lunara.vn | admin123 |
-| Khách | khach@lunara.vn | khach123 |
+| Admin | admin@tisora.vn | admin123 |
+| Khách | khach@tisora.vn | khach123 |
 
 ---
 
@@ -55,7 +55,7 @@ git push -u origin main
    - `AUTH_SECRET` = chuỗi random dài (vd generate bằng `openssl rand -base64 32`)
    - `AUTH_URL` = URL public Railway (vd `https://webthoitrang-production-xxxx.up.railway.app`) — **không** dùng localhost
    - `AUTH_TRUST_HOST` = `true` (khuyến nghị trên Railway)
-   - `NEXT_PUBLIC_BRAND_NAME` = `LUNARA` (tuỳ chọn)
+   - `NEXT_PUBLIC_BRAND_NAME` = `Tisora`
    - `NEXT_PUBLIC_HOTLINE` = hotline (tuỳ chọn)
    - Sapo vars để trống cũng được lúc đầu
 
@@ -76,7 +76,8 @@ Hoặc mở tab **Shell** trên service và chạy `npm run db:seed`.
 ### 4. Kiểm tra
 
 - Mở URL Railway → storefront
-- `/admin` → đăng nhập `admin@lunara.vn` / `admin123`
+- `/admin` → đăng nhập `admin@tisora.vn` / `admin123`
+- PDP demo: `/products/dam-voan-tang-ruby`
 - `/admin/settings/sapo` → gắn token Sapo khi sẵn sàng
 - Webhook Sapo: `https://<domain>/api/webhooks/sapo`
 

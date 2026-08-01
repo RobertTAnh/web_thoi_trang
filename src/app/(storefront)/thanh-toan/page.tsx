@@ -62,7 +62,7 @@ export default async function CheckoutPage() {
           />
           <input
             name="couponCode"
-            placeholder="Mã giảm giá (vd: LUNARA10)"
+            placeholder="Mã giảm giá (vd: TISORA10)"
             className="w-full border border-line bg-surface px-3 py-3 text-sm outline-none focus:border-ink"
           />
 

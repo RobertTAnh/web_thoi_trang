@@ -8,7 +8,7 @@ export default function ContactPage() {
       <h1 className="font-display text-5xl">Liên hệ</h1>
       <div className="mt-8 space-y-3 text-sm text-muted">
         <p>Hotline: {hotline}</p>
-        <p>Email: hello@lunara.vn</p>
+        <p>Email: hello@tisora.vn</p>
         <p>Địa chỉ: 70 Lữ Gia, Quận 11, TP. Hồ Chí Minh</p>
       </div>
       <form className="mt-10 space-y-4">

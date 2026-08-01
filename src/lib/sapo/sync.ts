@@ -239,7 +239,7 @@ export async function pushOrderToSapo(orderId: string) {
       order: {
         email: order.email,
         phone: order.phone,
-        note: `[LUNARA] ${order.orderNumber}${order.note ? ` — ${order.note}` : ""}`,
+        note: `[Tisora] ${order.orderNumber}${order.note ? ` — ${order.note}` : ""}`,
         gateway: order.paymentMethod === "COD" ? "Thanh toán khi giao hàng" : "Chuyển khoản",
         financial_status: order.paymentStatus === "PAID" ? "paid" : "pending",
         send_receipt: false,

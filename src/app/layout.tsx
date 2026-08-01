@@ -1,26 +1,22 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin", "latin-ext"],
+const beVietnam = Be_Vietnam_Pro({
+  variable: "--font-be-vietnam",
+  subsets: ["latin", "vietnamese"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin", "latin-ext", "vietnamese"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "LUNARA";
+const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "Tisora";
 
 export const metadata: Metadata = {
   title: {
     default: `${brand} — Thời trang nữ`,
     template: `%s | ${brand}`,
   },
-  description: "Cửa hàng thời trang nữ hiện đại — đầm, vest, sơ mi và hơn thế nữa.",
+  description:
+    "Cửa hàng thời trang nữ — đầm, vest, sơ mi. Demo layout kiểu Sapo / EGA Style.",
 };
 
 export default function RootLayout({
@@ -29,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${dmSans.variable} ${cormorant.variable} h-full`}>
-      <body className="min-h-full antialiased">{children}</body>
+    <html lang="vi" className={`${beVietnam.variable} h-full`}>
+      <body className="min-h-full font-sans antialiased">{children}</body>
     </html>
   );
 }

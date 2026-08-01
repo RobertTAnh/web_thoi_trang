@@ -32,7 +32,7 @@ export default async function LoginPage({
     <div className="mx-auto flex min-h-[60vh] max-w-md flex-col justify-center px-4 py-16">
       <h1 className="font-display text-5xl">Đăng nhập</h1>
       <p className="mt-2 text-sm text-muted">
-        Admin demo: admin@lunara.vn / admin123
+        Admin demo: admin@tisora.vn / admin123
       </p>
       {error && (
         <p className="mt-4 text-sm text-sale">Đăng nhập thất bại. Thử lại.</p>

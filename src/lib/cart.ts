@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { nanoid } from "nanoid";
 
-const CART_COOKIE = "lunara_cart";
+const CART_COOKIE = "tisora_cart";
 
 const cartInclude = {
   items: {

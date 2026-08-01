@@ -22,7 +22,7 @@ export function Countdown({ endsAt }: { endsAt: string | Date }) {
 
   const { days, hours, minutes, seconds } = parts(end - now);
   const box =
-    "min-w-12 bg-ink px-2 py-1.5 text-center text-white md:min-w-14";
+    "min-w-12 bg-[#212529] px-2 py-1.5 text-center text-white md:min-w-14";
 
   return (
     <div className="flex items-center gap-2 text-sm">

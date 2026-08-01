@@ -35,7 +35,7 @@ export default async function AdminLayout({
         <aside className="hidden w-60 shrink-0 border-r border-line bg-white md:block">
           <div className="border-b border-line px-5 py-5">
             <Link href="/admin" className="font-display text-2xl tracking-[0.14em]">
-              LUNARA
+              TISORA
             </Link>
             <p className="mt-1 text-xs text-muted">Admin Panel</p>
           </div>
@@ -56,7 +56,7 @@ export default async function AdminLayout({
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="flex items-center justify-between border-b border-line bg-white px-4 py-3 md:px-6">
-            <p className="text-sm text-muted md:hidden">LUNARA Admin</p>
+            <p className="text-sm text-muted md:hidden">Tisora Admin</p>
             <p className="text-sm">{session.user.email}</p>
             <form action={logout}>
               <button type="submit" className="text-sm text-accent">
