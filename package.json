@@ -5,11 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "prisma db push && next start --hostname 0.0.0.0",
+    "start": "prisma db push && tsx scripts/seed-if-empty.ts && next start --hostname 0.0.0.0",
     "lint": "eslint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed-if-empty": "tsx scripts/seed-if-empty.ts",
     "db:setup": "prisma db push && tsx prisma/seed.ts",
     "postinstall": "prisma generate"
   },
