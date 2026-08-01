@@ -77,15 +77,29 @@ export function ProductDetailClient({
   return (
     <div>
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* Gallery */}
-        <div>
-          <div className="relative aspect-[3/4] overflow-hidden bg-[#f5f5f5]">
+        {/* Gallery — thumbnail dọc bên trái như EGA Style */}
+        <div className="flex gap-2 md:gap-3">
+          <div className="flex w-14 shrink-0 flex-col gap-2 sm:w-16 md:w-[72px]">
+            {gallery.slice(0, 6).map((src, i) => (
+              <button
+                key={src + i}
+                type="button"
+                onClick={() => setActiveImg(i)}
+                className={`relative aspect-square w-full overflow-hidden border ${
+                  activeImg === i ? "border-accent" : "border-line"
+                }`}
+              >
+                <Image src={src} alt="" fill className="object-cover" sizes="72px" />
+              </button>
+            ))}
+          </div>
+          <div className="relative min-w-0 flex-1 aspect-[3/4] overflow-hidden bg-[#f5f5f5]">
             <Image
               src={gallery[activeImg] || gallery[0]}
               alt={product.name}
               fill
               className="object-cover"
-              sizes="50vw"
+              sizes="(max-width:1024px) 60vw, 40vw"
               priority
             />
             {pct > 0 && (
@@ -94,20 +108,28 @@ export function ProductDetailClient({
             <span className="absolute top-3 right-3 bg-white px-2 py-1 text-[11px] font-medium text-accent">
               {variant.stock > 0 ? "Còn hàng" : "Hết hàng"}
             </span>
-          </div>
-          <div className="mt-2 grid grid-cols-5 gap-2">
-            {gallery.slice(0, 5).map((src, i) => (
-              <button
-                key={src + i}
-                type="button"
-                onClick={() => setActiveImg(i)}
-                className={`relative aspect-square overflow-hidden border ${
-                  activeImg === i ? "border-accent" : "border-line"
-                }`}
-              >
-                <Image src={src} alt="" fill className="object-cover" sizes="80px" />
-              </button>
-            ))}
+            {gallery.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Ảnh trước"
+                  className="absolute top-1/2 left-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow"
+                  onClick={() =>
+                    setActiveImg((i) => (i - 1 + gallery.length) % gallery.length)
+                  }
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  aria-label="Ảnh sau"
+                  className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow"
+                  onClick={() => setActiveImg((i) => (i + 1) % gallery.length)}
+                >
+                  ›
+                </button>
+              </>
+            )}
           </div>
         </div>
 
