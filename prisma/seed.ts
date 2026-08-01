@@ -58,6 +58,15 @@ async function main() {
     });
   }
 
+  // Dọn URL ảnh Unsplash hỏng còn sót từ seed cũ
+  await prisma.category.updateMany({
+    where: { image: { contains: "photo-1617331721458" } },
+    data: {
+      image: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80",
+    },
+  });
+
+
   const dam = await prisma.category.findUniqueOrThrow({ where: { slug: "dam" } });
   const somi = await prisma.category.findUniqueOrThrow({ where: { slug: "ao-so-mi" } });
 

@@ -1,20 +1,20 @@
+import NextAuth from "next-auth";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { authConfig } from "@/lib/auth.config";
+
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
-
   if (!pathname.startsWith("/admin")) {
     return NextResponse.next();
   }
 
-  const role = req.auth?.user?.role;
-  if (role === "ADMIN") {
+  if (req.auth?.user?.role === "ADMIN") {
     return NextResponse.next();
   }
 
-  const url = req.nextUrl.clone();
-  url.pathname = "/dang-nhap";
+  const url = new URL("/dang-nhap", req.nextUrl.origin);
   url.searchParams.set("callbackUrl", pathname);
   return NextResponse.redirect(url);
 });
