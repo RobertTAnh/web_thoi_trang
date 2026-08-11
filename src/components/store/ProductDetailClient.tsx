@@ -7,6 +7,7 @@ import { formatVnd, discountPercent } from "@/lib/utils";
 import { looksLikeHtml, sanitizeHtml } from "@/lib/html";
 import { AddToCartButton } from "@/components/store/AddToCartButton";
 import { Countdown } from "@/components/store/Countdown";
+import { ProductLightbox } from "@/components/store/ProductLightbox";
 
 type Variant = {
   id: string;
@@ -68,6 +69,7 @@ export function ProductDetailClient({
   const [objectPos, setObjectPos] = useState<"top" | "bottom">("bottom");
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
   const [applyMsg, setApplyMsg] = useState<string | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -159,14 +161,24 @@ export function ProductDetailClient({
             ))}
           </div>
           <div
-            className="relative min-w-0 flex-1 overflow-hidden bg-[#f5f5f5]"
+            className="relative min-w-0 flex-1 cursor-zoom-in overflow-hidden bg-[#f5f5f5]"
             style={{ aspectRatio: "3 / 4" }}
+            role="button"
+            tabIndex={0}
+            aria-label="Xem ảnh lớn"
+            onClick={() => setLightboxOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setLightboxOpen(true);
+              }
+            }}
           >
             <Image
               src={currentSrc}
               alt={product.name}
               fill
-              className={`object-cover ${objectPos === "top" ? "object-top" : "object-bottom"}`}
+              className={`pointer-events-none object-cover ${objectPos === "top" ? "object-top" : "object-bottom"}`}
               sizes="(max-width:1024px) 60vw, 40vw"
               priority
               unoptimized={currentSrc.startsWith("/api/media/")}
@@ -178,9 +190,10 @@ export function ProductDetailClient({
                   type="button"
                   aria-label="Ảnh trước"
                   className="absolute top-1/2 left-2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow"
-                  onClick={() =>
-                    setActiveImg((i) => (i - 1 + gallery.length) % gallery.length)
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
+                  }}
                 >
                   ‹
                 </button>
@@ -188,7 +201,10 @@ export function ProductDetailClient({
                   type="button"
                   aria-label="Ảnh sau"
                   className="absolute top-1/2 right-2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow"
-                  onClick={() => setActiveImg((i) => (i + 1) % gallery.length)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveImg((i) => (i + 1) % gallery.length);
+                  }}
                 >
                   ›
                 </button>
@@ -196,6 +212,15 @@ export function ProductDetailClient({
             )}
           </div>
         </div>
+
+        <ProductLightbox
+          open={lightboxOpen}
+          images={gallery}
+          index={activeImg}
+          alt={product.name}
+          onClose={() => setLightboxOpen(false)}
+          onChangeIndex={setActiveImg}
+        />
 
         {/* Info — layout kiểu đối thủ */}
         <div>
