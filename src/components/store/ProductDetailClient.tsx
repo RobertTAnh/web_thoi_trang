@@ -137,15 +137,15 @@ export function ProductDetailClient({
   return (
     <div>
       <div className="grid items-start gap-8 lg:grid-cols-2">
-        {/* Gallery — khung 4:3 cố định, không bị kéo theo cột phải */}
+        {/* Gallery — khung 3:4 y đối thủ */}
         <div className="flex w-full gap-2 self-start md:gap-3">
-          <div className="flex w-14 shrink-0 flex-col gap-2 sm:w-16 md:w-[72px]">
+          <div className="flex w-12 shrink-0 flex-col gap-2 sm:w-14 md:w-16">
             {gallery.slice(0, 8).map((src, i) => (
               <button
                 key={src + i}
                 type="button"
                 onClick={() => setActiveImg(i)}
-                className={`relative aspect-square w-full overflow-hidden border ${
+                className={`relative aspect-[3/4] w-full overflow-hidden border ${
                   activeImg === i ? "border-accent" : "border-line"
                 }`}
               >
@@ -154,7 +154,7 @@ export function ProductDetailClient({
                   alt=""
                   fill
                   className="object-cover object-top"
-                  sizes="72px"
+                  sizes="64px"
                   unoptimized={src.startsWith("/api/media/")}
                 />
               </button>
@@ -224,7 +224,7 @@ export function ProductDetailClient({
 
         {/* Info — layout kiểu đối thủ */}
         <div>
-          <h1 className="text-[22px] leading-snug font-semibold md:text-[28px]">
+          <h1 className="text-[22px] leading-snug font-bold text-ink md:text-[28px]">
             {product.name}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">

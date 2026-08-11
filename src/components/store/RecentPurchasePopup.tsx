@@ -175,7 +175,7 @@ export function RecentPurchasePopup({ products }: { products: PopupProduct[] }) 
         href={`/products/${toast.product.slug}`}
         className="flex gap-3 rounded-lg border border-line bg-white p-2.5 shadow-lg hover:border-accent"
       >
-        <div className="relative h-16 w-14 shrink-0 overflow-hidden bg-[#f5f5f5]">
+        <div className="relative aspect-[3/4] w-14 shrink-0 overflow-hidden bg-[#f5f5f5]">
           <Image
             src={image}
             alt=""
@@ -186,7 +186,7 @@ export function RecentPurchasePopup({ products }: { products: PopupProduct[] }) 
           />
         </div>
         <div className="min-w-0 flex-1 py-0.5 pr-1">
-          <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-ink">
+          <p className="line-clamp-2 text-[13px] font-bold leading-snug text-ink">
             {toast.product.name}
           </p>
           <p className="mt-1 text-[12px] leading-snug text-muted">

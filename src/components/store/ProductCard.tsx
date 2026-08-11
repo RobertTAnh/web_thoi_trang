@@ -66,7 +66,7 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
         <Link
           href={`/products/${product.slug}`}
-          className="block text-[13px] font-medium hover:text-accent"
+          className="block text-[13px] font-bold text-ink hover:text-accent"
         >
           {product.name}
         </Link>
