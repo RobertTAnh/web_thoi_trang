@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+export const maxDuration = 30;
 
 type Params = { params: Promise<{ id: string }> };
 

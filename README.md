@@ -5,8 +5,9 @@ Next.js e-commerce thời trang (layout tham chiếu EGA Style / Sapo): storefro
 ## Stack
 
 - Next.js 16 + TypeScript + Tailwind
-- PostgreSQL + Prisma
+- PostgreSQL (Neon) + Prisma
 - Auth.js (credentials)
+- Deploy: **Vercel** (web) + **Neon** (DB)
 - Sapo Admin API + Webhooks
 
 ## Chạy local
@@ -14,6 +15,7 @@ Next.js e-commerce thời trang (layout tham chiếu EGA Style / Sapo): storefro
 ```bash
 docker compose up -d
 npm install
+# .env: DATABASE_URL + DIRECT_URL trỏ localhost:5433 (có thể giống nhau)
 npm run db:setup
 npm run dev
 ```
@@ -31,61 +33,93 @@ npm run dev
 
 ---
 
-## Deploy GitHub → Railway
+## Deploy GitHub → Vercel + Neon
 
-### 1. Đẩy code lên GitHub
+### 1. Tạo database Neon
+
+1. Vào [console.neon.tech](https://console.neon.tech) → **New Project** (region Singapore nếu có)
+2. Copy 2 connection strings:
+   - **Pooled / Transaction** → `DATABASE_URL`
+   - **Direct** → `DIRECT_URL`
+3. Cả hai nên có `?sslmode=require`
+
+### 2. Migrate data từ Railway (nếu đang có data)
 
 ```bash
-git init   # nếu chưa có
-git add .
-git commit -m "Initial commit: LUNARA fashion shop"
-# Tạo repo trống trên GitHub, rồi:
-git remote add origin https://github.com/<USER>/<REPO>.git
-git branch -M main
+# Export Railway Postgres
+pg_dump "$RAILWAY_DATABASE_URL" -Fc -f railway.dump
+
+# Restore vào Neon (dùng DIRECT_URL)
+pg_restore --clean --if-exists --no-owner --no-acl -d "$DIRECT_URL" railway.dump
+```
+
+Hoặc dùng script helper (cần `pg_dump` / `pg_restore` trên máy):
+
+```bash
+# Windows PowerShell
+$env:RAILWAY_DATABASE_URL="postgresql://..."
+$env:DIRECT_URL="postgresql://...neon..."
+npm run db:migrate-railway-neon
+```
+
+Verify:
+
+```bash
+npx tsx -e "const {PrismaClient}=require('@prisma/client'); const p=new PrismaClient(); Promise.all([p.product.count(),p.mediaAsset.count()]).then(console.log).finally(()=>p.$disconnect())"
+```
+
+Giữ Railway **không xóa** cho đến khi Vercel chạy ổn.
+
+### 3. Đẩy code & kết nối Vercel
+
+```bash
 git push -u origin main
 ```
 
-### 2. Tạo project trên Railway
+1. [vercel.com](https://vercel.com) → **Add New Project** → import repo GitHub
+2. Framework: Next.js (auto)
+3. **Environment Variables** (Production):
 
-1. Vào [railway.app](https://railway.app) → **New Project**
-2. **Deploy from GitHub repo** → chọn repo vừa push
-3. **Add Plugin / Database** → **PostgreSQL** (cùng project)
-4. Vào service Web → **Variables**:
-   - `DATABASE_URL` = reference từ Postgres (`${{Postgres.DATABASE_URL}}`)
-   - `AUTH_SECRET` = chuỗi random dài (vd generate bằng `openssl rand -base64 32`)
-   - `AUTH_URL` = URL public Railway (vd `https://webthoitrang-production-xxxx.up.railway.app`) — **không** dùng localhost
-   - `AUTH_TRUST_HOST` = `true` (khuyến nghị trên Railway)
-   - `NEXT_PUBLIC_BRAND_NAME` = `Tisora`
-   - `NEXT_PUBLIC_HOTLINE` = hotline (tuỳ chọn)
-   - Sapo vars để trống cũng được lúc đầu
+| Key | Giá trị |
+|-----|---------|
+| `DATABASE_URL` | Neon **pooled** |
+| `DIRECT_URL` | Neon **direct** |
+| `AUTH_SECRET` | `openssl rand -base64 32` |
+| `AUTH_URL` | `https://<project>.vercel.app` (đổi sau khi có domain) |
+| `AUTH_TRUST_HOST` | `true` |
+| `NEXT_PUBLIC_BRAND_NAME` | `Tisora` |
+| `NEXT_PUBLIC_HOTLINE` | hotline (tuỳ chọn) |
+| `SAPO_STORE_URL` / `SAPO_ACCESS_TOKEN` / `SAPO_WEBHOOK_SECRET` | copy từ Railway nếu có |
 
-5. **Quan trọng:** `DATABASE_URL` phải có trên service Web (Reference từ Postgres). Nếu thiếu, start sẽ fail.
-6. Deploy lại nếu cần (Railway dùng `railway.toml`: build = `npm run build`, start = `npm run start` — schema sync lúc **start**, không lúc build)
-7. Sau deploy thành công, **cập nhật `AUTH_URL`** đúng domain public rồi redeploy (hoặc restart)
+4. Deploy → mở URL Vercel
+5. Cập nhật `AUTH_URL` đúng domain public rồi **Redeploy**
 
-### 3. Seed admin trên production (1 lần)
-
-Trong Railway → service Web → **Settings** → hoặc dùng CLI:
+### 4. Seed (chỉ khi DB trống)
 
 ```bash
-railway run npm run db:seed
+# Local, .env trỏ Neon
+npm run db:seed-if-empty
 ```
 
-Hoặc mở tab **Shell** trên service và chạy `npm run db:seed`.
+Import Excel lớn + ảnh: chạy local (Vercel Hobby dễ timeout):
 
-### 4. Kiểm tra
+```bash
+npm run db:import-sapo
+```
 
-- Mở URL Railway → storefront
-- `/admin` → đăng nhập `admin@tisora.vn` / `admin123`
-- PDP demo: `/products/dam-voan-tang-ruby`
-- `/admin/settings/sapo` → gắn token Sapo khi sẵn sàng
+### 5. Kiểm tra
+
+- Storefront + ảnh `/api/media/...`
+- `/admin` → đăng nhập
+- Checkout, Sapo settings
 - Webhook Sapo: `https://<domain>/api/webhooks/sapo`
 
-### Lưu ý
+### Lưu ý Vercel
 
-- Start chạy `prisma db push` — schema tự đồng bộ mỗi lần container khởi động (cần `DATABASE_URL` lúc runtime)
-- Không commit file `.env` (đã nằm trong `.gitignore`)
-- Spending limit: bật trên Railway để tránh phát sinh ngoài dự kiến
+- Build chạy `prisma generate && prisma db push && next build` (cần `DIRECT_URL`)
+- Không seed mỗi deploy
+- Ảnh binary trong Neon chiếm storage — Free ~0.5GB; monitor usage
+- Không commit `.env`
 
 ---
 

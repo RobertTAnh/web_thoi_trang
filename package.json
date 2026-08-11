@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
-    "start": "prisma db push && tsx prisma/seed.ts && next start --hostname 0.0.0.0",
+    "build": "prisma generate && prisma db push && next build",
+    "start": "next start --hostname 0.0.0.0",
     "lint": "eslint",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
@@ -13,6 +13,8 @@
     "db:seed-if-empty": "tsx scripts/seed-if-empty.ts",
     "db:import-sapo": "tsx scripts/import-sapo-excel.ts",
     "db:fix-prices-stock": "tsx scripts/fix-compareat-stock.ts",
+    "db:migrate-railway-neon": "tsx scripts/migrate-railway-to-neon.ts",
+    "db:verify": "tsx scripts/verify-db-counts.ts",
     "db:setup": "prisma db push && tsx prisma/seed.ts",
     "postinstall": "prisma generate"
   },
