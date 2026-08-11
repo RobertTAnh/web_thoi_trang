@@ -153,3 +153,49 @@ a {
   background: var(--accent);
   margin: 12px auto 0;
 }
+
+/* Mô tả sản phẩm HTML từ Sapo / Excel */
+.product-html p {
+  margin: 0 0 0.75em;
+}
+.product-html p:last-child {
+  margin-bottom: 0;
+}
+.product-html ul,
+.product-html ol {
+  margin: 0.5em 0 0.75em;
+  padding-left: 1.25em;
+}
+.product-html li {
+  margin: 0.25em 0;
+}
+.product-html strong,
+.product-html b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.product-html table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 13px;
+}
+.product-html th,
+.product-html td {
+  border: 1px solid var(--line);
+  padding: 8px 10px;
+  text-align: left;
+}
+.product-html img {
+  max-width: 100%;
+  height: auto;
+  margin: 0.75em 0;
+}
+.product-html h1,
+.product-html h2,
+.product-html h3,
+.product-html h4 {
+  color: var(--ink);
+  font-weight: 600;
+  margin: 1em 0 0.5em;
+}

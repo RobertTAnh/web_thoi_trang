@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/utils";
+import { beautifyProductHtml } from "@/lib/html";
 import { getSapoClient, type SapoProduct, type SapoVariant } from "@/lib/sapo/client";
 import { getSapoCredentials } from "@/lib/sapo/settings";
 import { SyncLogType } from "@prisma/client";
@@ -56,7 +57,7 @@ async function upsertSapoProduct(product: SapoProduct) {
     update: {
       name: product.name,
       slug,
-      description: product.content || null,
+      description: product.content ? beautifyProductHtml(product.content) : null,
       brand: product.vendor || null,
       images,
       published: product.published !== false,
@@ -65,7 +66,7 @@ async function upsertSapoProduct(product: SapoProduct) {
       sapoProductId: String(product.id),
       name: product.name,
       slug,
-      description: product.content || null,
+      description: product.content ? beautifyProductHtml(product.content) : null,
       brand: product.vendor || null,
       images,
       published: product.published !== false,

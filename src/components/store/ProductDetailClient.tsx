@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatVnd, discountPercent } from "@/lib/utils";
+import { looksLikeHtml, sanitizeHtml } from "@/lib/html";
 import { AddToCartButton } from "@/components/store/AddToCartButton";
 import { Countdown } from "@/components/store/Countdown";
 
@@ -364,14 +365,35 @@ export function ProductDetailClient({
             </button>
           ))}
         </div>
-        <div className="p-5 text-[14px] leading-7 text-[#444] whitespace-pre-wrap">
+        <div className="product-html p-5 text-[14px] leading-7 text-[#444]">
           {tab === "desc" &&
-            (product.description ||
-              "Đầm thiết kế tinh tế, chất liệu cao cấp, phù hợp dự tiệc và sự kiện.")}
-          {tab === "ship" &&
-            "Giao hàng toàn quốc. Đồng giá ship 25.000đ. Miễn phí ship đơn từ 300.000đ. Thời gian nhận hàng dự kiến 2–4 ngày làm việc."}
-          {tab === "return" &&
-            "Đổi trả trong 30 ngày nếu sản phẩm lỗi từ nhà sản xuất. Sản phẩm còn nguyên tem mác, chưa qua sử dụng."}
+            (product.description ? (
+              looksLikeHtml(product.description) ? (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(product.description),
+                  }}
+                />
+              ) : (
+                <p className="whitespace-pre-wrap">{product.description}</p>
+              )
+            ) : (
+              <p>
+                Đầm thiết kế tinh tế, chất liệu cao cấp, phù hợp dự tiệc và sự kiện.
+              </p>
+            ))}
+          {tab === "ship" && (
+            <p>
+              Giao hàng toàn quốc. Đồng giá ship 25.000đ. Miễn phí ship đơn từ
+              300.000đ. Thời gian nhận hàng dự kiến 2–4 ngày làm việc.
+            </p>
+          )}
+          {tab === "return" && (
+            <p>
+              Đổi trả trong 30 ngày nếu sản phẩm lỗi từ nhà sản xuất. Sản phẩm còn
+              nguyên tem mác, chưa qua sử dụng.
+            </p>
+          )}
         </div>
       </div>
     </div>

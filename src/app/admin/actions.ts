@@ -225,6 +225,29 @@ export async function fixCompareAtAndStockAction() {
   return { ok: true as const, updated: Number(updated) };
 }
 
+/** Chuẩn hóa HTML mô tả tất cả sản phẩm (Sapo/Excel). */
+export async function beautifyAllDescriptionsAction() {
+  await ensureAdmin();
+  const { beautifyProductHtml } = await import("@/lib/html");
+  const products = await prisma.product.findMany({
+    select: { id: true, description: true },
+  });
+  let updated = 0;
+  for (const p of products) {
+    const next = beautifyProductHtml(p.description);
+    if (next !== p.description) {
+      await prisma.product.update({
+        where: { id: p.id },
+        data: { description: next },
+      });
+      updated += 1;
+    }
+  }
+  revalidatePath("/admin/products");
+  revalidatePath("/");
+  return { ok: true as const, updated, total: products.length };
+}
+
 export async function deleteProductAction(formData: FormData) {
   await ensureAdmin();
   const id = String(formData.get("id") || "");

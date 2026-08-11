@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { SyncLogType } from "@prisma/client";
 import type { SapoProduct } from "@/lib/sapo/client";
 import { slugify } from "@/lib/utils";
+import { beautifyProductHtml } from "@/lib/html";
 
 function verifySignature(rawBody: string, signature: string | null) {
   const secret = process.env.SAPO_WEBHOOK_SECRET;
@@ -68,7 +69,9 @@ export async function POST(req: NextRequest) {
               name: product.name,
               slug: slugify(product.alias || `${product.name}-${product.id}`),
               brand: product.vendor || null,
-              description: product.content || null,
+              description: product.content
+                ? beautifyProductHtml(product.content)
+                : null,
               images: (product.images || []).map((i) => i.src),
               published: product.published !== false,
               variants: {

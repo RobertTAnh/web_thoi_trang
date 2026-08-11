@@ -5,6 +5,7 @@ import { formatVnd } from "@/lib/utils";
 import { syncProductsAction } from "@/app/admin/actions";
 import { SapoExcelImportForm } from "@/components/admin/SapoExcelImportForm";
 import { FixPricesStockButton } from "@/components/admin/FixPricesStockButton";
+import { BeautifyDescriptionsButton } from "@/components/admin/BeautifyDescriptionsButton";
 
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({
@@ -41,6 +42,13 @@ export default async function AdminProductsPage() {
             Sau đó bạn sửa giá bán web từng SP.
           </p>
           <FixPricesStockButton />
+          <div className="mt-4 border-t border-line pt-4">
+            <p className="mb-2 text-sm font-medium">Mô tả sản phẩm</p>
+            <p className="mb-3 text-xs text-muted">
+              Chuẩn hóa HTML mô tả (bỏ thẻ rỗng, decode nếu bị escape). Storefront đã render HTML.
+            </p>
+            <BeautifyDescriptionsButton />
+          </div>
         </div>
       </div>
 

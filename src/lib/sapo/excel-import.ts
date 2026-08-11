@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 import { prisma } from "@/lib/db";
 import { slugify } from "@/lib/utils";
+import { beautifyProductHtml } from "@/lib/html";
 import { storeImageFromUrl } from "@/lib/media";
 
 export type SapoImportResult = {
@@ -129,7 +130,7 @@ function parseWorkbookRows(workbook: ExcelJS.Workbook): RowProduct[] {
     rows.push({
       name: currentName,
       productType: currentType,
-      description: currentDesc,
+      description: currentDesc ? beautifyProductHtml(currentDesc) : null,
       brand: currentBrand,
       attr1Name: currentAttr1 ?? cellStr(row.getCell(col("Thuộc tính 1") || 7).value),
       attr1Value: cellStr(row.getCell(col("Giá trị thuộc tính 1") || 8).value),
@@ -220,7 +221,9 @@ export async function importSapoExcelBuffer(
             where: { id: productId },
             data: {
               name: row.name,
-              description: row.description ?? product.description,
+              description: row.description
+                ? beautifyProductHtml(row.description)
+                : product.description,
               brand: row.brand ?? product.brand,
               categoryId: categoryId ?? product.categoryId,
               images,
@@ -264,7 +267,9 @@ export async function importSapoExcelBuffer(
           await prisma.product.update({
             where: { id: productId },
             data: {
-              description: row.description ?? existingProduct.description,
+              description: row.description
+                ? beautifyProductHtml(row.description)
+                : existingProduct.description,
               brand: row.brand ?? existingProduct.brand,
               categoryId: categoryId ?? existingProduct.categoryId,
               images,
@@ -278,7 +283,9 @@ export async function importSapoExcelBuffer(
             data: {
               name: row.name,
               slug,
-              description: row.description,
+              description: row.description
+                ? beautifyProductHtml(row.description)
+                : null,
               brand: row.brand,
               categoryId,
               images,
