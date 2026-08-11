@@ -12,6 +12,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed-if-empty": "tsx scripts/seed-if-empty.ts",
     "db:import-sapo": "tsx scripts/import-sapo-excel.ts",
+    "db:fix-prices-stock": "tsx scripts/fix-compareat-stock.ts",
     "db:setup": "prisma db push && tsx prisma/seed.ts",
     "postinstall": "prisma generate"
   },

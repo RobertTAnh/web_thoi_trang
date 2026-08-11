@@ -235,11 +235,13 @@ export async function importSapoExcelBuffer(
             title: row.variantTitle || `${color || ""} / ${size || ""}`.trim(),
             color,
             size,
+            // PL_Giá bán lẻ từ Sapo = giá gốc; giá bán web tạm = giá gốc (sửa sau trên admin)
             price: row.retailPrice,
+            compareAt: row.retailPrice || null,
             costPrice: row.costPrice,
             wholesalePrice: row.wholesalePrice,
+            stock: 200,
             image: media || existingVariant.image,
-            // keep stock — Excel has no inventory
           },
         });
         result.variants += 1;
@@ -308,9 +310,10 @@ export async function importSapoExcelBuffer(
           color,
           size,
           price: row.retailPrice,
+          compareAt: row.retailPrice || null,
           costPrice: row.costPrice,
           wholesalePrice: row.wholesalePrice,
-          stock: 0,
+          stock: 200,
           image: media,
         },
       });

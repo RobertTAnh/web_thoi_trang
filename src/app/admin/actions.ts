@@ -211,6 +211,20 @@ export async function importSapoExcelAction(formData: FormData) {
   };
 }
 
+/** Chuyển giá bán hiện tại → giá gốc, giá bán = giá gốc, tồn = 200 cho mọi biến thể. */
+export async function fixCompareAtAndStockAction() {
+  await ensureAdmin();
+  const updated = await prisma.$executeRaw`
+    UPDATE "ProductVariant"
+    SET
+      "compareAt" = price,
+      stock = 200
+  `;
+  revalidatePath("/admin/products");
+  revalidatePath("/admin/crm");
+  return { ok: true as const, updated: Number(updated) };
+}
+
 export async function deleteProductAction(formData: FormData) {
   await ensureAdmin();
   const id = String(formData.get("id") || "");

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { formatVnd } from "@/lib/utils";
 import { syncProductsAction } from "@/app/admin/actions";
 import { SapoExcelImportForm } from "@/components/admin/SapoExcelImportForm";
+import { FixPricesStockButton } from "@/components/admin/FixPricesStockButton";
 
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({
@@ -33,6 +34,14 @@ export default async function AdminProductsPage() {
           Tải ảnh từ URL trong file về Postgres (Railway) rồi gắn /api/media/...
         </p>
         <SapoExcelImportForm />
+        <div className="mt-4 border-t border-line pt-4">
+          <p className="mb-2 text-sm font-medium">Chỉnh giá &amp; tồn nhanh</p>
+          <p className="mb-3 text-xs text-muted">
+            Giá đang ở ô bán lẻ → copy sang giá gốc; giá bán = giá gốc; tồn kho mọi biến thể = 200.
+            Sau đó bạn sửa giá bán web từng SP.
+          </p>
+          <FixPricesStockButton />
+        </div>
       </div>
 
       <div className="mt-6 overflow-x-auto border border-line bg-white">

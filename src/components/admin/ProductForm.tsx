@@ -203,7 +203,20 @@ export function ProductForm({
 
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="block space-y-1">
-                <span className="text-xs text-muted">Giá bán (lẻ)</span>
+                <span className="text-xs text-muted">Giá gốc (gạch ngang trên web)</span>
+                <input
+                  type="number"
+                  value={v.compareAt ?? ""}
+                  onChange={(e) =>
+                    updateVariant(index, {
+                      compareAt: e.target.value === "" ? null : Number(e.target.value),
+                    })
+                  }
+                  className="w-full border border-line px-2 py-1.5"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-xs text-muted">Giá bán (hiển thị web)</span>
                 <input
                   type="number"
                   value={v.price ?? 0}
@@ -225,6 +238,9 @@ export function ProductForm({
                   className="w-full border border-line px-2 py-1.5"
                 />
               </label>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
               <label className="block space-y-1">
                 <span className="text-xs text-muted">Giá buôn</span>
                 <input
@@ -233,22 +249,6 @@ export function ProductForm({
                   onChange={(e) =>
                     updateVariant(index, {
                       wholesalePrice: e.target.value === "" ? null : Number(e.target.value),
-                    })
-                  }
-                  className="w-full border border-line px-2 py-1.5"
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <label className="block space-y-1">
-                <span className="text-xs text-muted">Giá gốc (gạch ngang)</span>
-                <input
-                  type="number"
-                  value={v.compareAt ?? ""}
-                  onChange={(e) =>
-                    updateVariant(index, {
-                      compareAt: e.target.value === "" ? null : Number(e.target.value),
                     })
                   }
                   className="w-full border border-line px-2 py-1.5"
