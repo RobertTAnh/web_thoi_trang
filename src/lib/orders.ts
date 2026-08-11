@@ -40,6 +40,7 @@ export async function createOrderFromCheckout(input: CheckoutInput) {
       color: variant.color,
       size: variant.size,
       price: variant.price,
+      costPrice: variant.costPrice ?? null,
       quantity: item.quantity,
       image: variant.image || variant.product.images[0] || null,
     };

@@ -8,7 +8,13 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.mysapo.net" },
       { protocol: "https", hostname: "**.sapocdn.net" },
       { protocol: "https", hostname: "bizweb.dktcdn.net" },
+      { protocol: "https", hostname: "sapo.dktcdn.net" },
     ],
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "20mb",
+    },
   },
 };
 

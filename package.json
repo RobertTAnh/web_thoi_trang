@@ -11,6 +11,7 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:seed-if-empty": "tsx scripts/seed-if-empty.ts",
+    "db:import-sapo": "tsx scripts/import-sapo-excel.ts",
     "db:setup": "prisma db push && tsx prisma/seed.ts",
     "postinstall": "prisma generate"
   },
@@ -25,6 +26,7 @@
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
+    "exceljs": "^4.4.0",
     "nanoid": "^6.0.0",
     "next": "16.2.12",
     "next-auth": "^5.0.0-beta.32",

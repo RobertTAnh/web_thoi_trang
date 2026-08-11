@@ -39,6 +39,11 @@ export default async function CartPage() {
                     fill
                     className="object-cover"
                     sizes="80px"
+                    unoptimized={(
+                      item.variant.image ||
+                      item.variant.product.images[0] ||
+                      ""
+                    ).startsWith("/api/media/")}
                   />
                 </div>
                 <div className="flex-1">

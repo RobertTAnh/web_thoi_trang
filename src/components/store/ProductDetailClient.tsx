@@ -89,7 +89,14 @@ export function ProductDetailClient({
                   activeImg === i ? "border-accent" : "border-line"
                 }`}
               >
-                <Image src={src} alt="" fill className="object-cover" sizes="72px" />
+                <Image
+                  src={src}
+                  alt=""
+                  fill
+                  className="object-cover"
+                  sizes="72px"
+                  unoptimized={src.startsWith("/api/media/")}
+                />
               </button>
             ))}
           </div>
@@ -101,6 +108,7 @@ export function ProductDetailClient({
               className="object-cover"
               sizes="(max-width:1024px) 60vw, 40vw"
               priority
+              unoptimized={(gallery[activeImg] || gallery[0]).startsWith("/api/media/")}
             />
             {pct > 0 && (
               <span className="badge-sale absolute top-3 left-3 text-sm">-{pct}%</span>

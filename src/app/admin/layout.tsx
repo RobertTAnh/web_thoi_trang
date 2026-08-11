@@ -6,6 +6,8 @@ const links = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/products", label: "Sản phẩm" },
   { href: "/admin/orders", label: "Đơn hàng" },
+  { href: "/admin/customers", label: "Khách hàng" },
+  { href: "/admin/crm", label: "CRM / Lợi nhuận" },
   { href: "/admin/coupons", label: "Mã giảm giá" },
   { href: "/admin/flash-sales", label: "Flash sale" },
   { href: "/admin/categories", label: "Danh mục" },

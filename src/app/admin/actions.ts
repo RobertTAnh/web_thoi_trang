@@ -39,6 +39,19 @@ export async function updateOrderStatusAction(formData: FormData) {
   revalidatePath("/admin/orders");
 }
 
+type VariantPayload = {
+  id?: string;
+  sku?: string;
+  color?: string;
+  size?: string;
+  price?: number;
+  compareAt?: number | null;
+  costPrice?: number | null;
+  wholesalePrice?: number | null;
+  stock?: number;
+  image?: string | null;
+};
+
 export async function saveProductAction(formData: FormData) {
   await ensureAdmin();
   const id = String(formData.get("id") || "");
@@ -46,14 +59,29 @@ export async function saveProductAction(formData: FormData) {
   const brand = String(formData.get("brand") || "") || null;
   const description = String(formData.get("description") || "") || null;
   const categoryId = String(formData.get("categoryId") || "") || null;
-  const image = String(formData.get("image") || "");
   const published = formData.get("published") === "on";
   const featured = formData.get("featured") === "on";
-  const price = Number(formData.get("price") || 0);
-  const compareAt = Number(formData.get("compareAt") || 0) || null;
-  const stock = Number(formData.get("stock") || 0);
-  const color = String(formData.get("color") || "") || null;
-  const size = String(formData.get("size") || "") || null;
+
+  let images: string[] = [];
+  try {
+    const parsed = JSON.parse(String(formData.get("imagesJson") || "[]"));
+    if (Array.isArray(parsed)) {
+      images = parsed.map(String).map((s) => s.trim()).filter(Boolean);
+    }
+  } catch {
+    images = [];
+  }
+
+  let variants: VariantPayload[] = [];
+  try {
+    const parsed = JSON.parse(String(formData.get("variantsJson") || "[]"));
+    if (Array.isArray(parsed)) variants = parsed;
+  } catch {
+    variants = [];
+  }
+  if (!variants.length) {
+    throw new Error("Cần ít nhất 1 biến thể");
+  }
 
   const slugBase = slugify(name);
   let slug = slugBase;
@@ -63,6 +91,28 @@ export async function saveProductAction(formData: FormData) {
     if (!existing || existing.id === id) break;
     slug = `${slugBase}-${i++}`;
   }
+
+  const normalizeVariant = (v: VariantPayload, index: number) => {
+    const color = v.color || null;
+    const size = v.size || null;
+    const toNullableInt = (n: number | null | undefined) => {
+      if (n == null || Number.isNaN(Number(n))) return null;
+      const value = Number(n);
+      return value > 0 || value === 0 ? value : null;
+    };
+    return {
+      sku: v.sku?.trim() || `${slug.toUpperCase()}-${String(index + 1).padStart(2, "0")}`,
+      color,
+      size,
+      title: `${color || "Default"} / ${size || "Freesize"}`,
+      price: Number(v.price) || 0,
+      compareAt: toNullableInt(v.compareAt ?? null),
+      costPrice: toNullableInt(v.costPrice ?? null),
+      wholesalePrice: toNullableInt(v.wholesalePrice ?? null),
+      stock: Number(v.stock) || 0,
+      image: v.image || images[0] || null,
+    };
+  };
 
   if (id) {
     await prisma.product.update({
@@ -75,16 +125,41 @@ export async function saveProductAction(formData: FormData) {
         categoryId,
         published,
         featured,
-        images: image ? [image] : undefined,
+        images,
       },
     });
-    const first = await prisma.productVariant.findFirst({ where: { productId: id } });
-    if (first) {
-      await prisma.productVariant.update({
-        where: { id: first.id },
-        data: { price, compareAt, stock, color, size, title: `${color || ""} / ${size || ""}` },
-      });
+
+    const existing = await prisma.productVariant.findMany({
+      where: { productId: id },
+      select: { id: true },
+    });
+    const keepIds: string[] = [];
+
+    for (let idx = 0; idx < variants.length; idx++) {
+      const raw = variants[idx];
+      const data = normalizeVariant(raw, idx);
+      if (raw.id && existing.some((e) => e.id === raw.id)) {
+        await prisma.productVariant.update({
+          where: { id: raw.id },
+          data,
+        });
+        keepIds.push(raw.id);
+      } else {
+        const created = await prisma.productVariant.create({
+          data: { productId: id, ...data },
+        });
+        keepIds.push(created.id);
+      }
     }
+
+    await prisma.productVariant.deleteMany({
+      where: {
+        productId: id,
+        id: { notIn: keepIds },
+        cartItems: { none: {} },
+        orderItems: { none: {} },
+      },
+    });
   } else {
     await prisma.product.create({
       data: {
@@ -95,24 +170,45 @@ export async function saveProductAction(formData: FormData) {
         categoryId,
         published,
         featured,
-        images: image ? [image] : [],
+        images,
         variants: {
-          create: {
-            price,
-            compareAt,
-            stock,
-            color,
-            size,
-            title: `${color || "Default"} / ${size || "Freesize"}`,
-            sku: `${slugify(name).toUpperCase()}-01`,
-          },
+          create: variants.map((v, idx) => normalizeVariant(v, idx)),
         },
       },
     });
   }
 
   revalidatePath("/admin/products");
+  revalidatePath("/admin/crm");
   redirect("/admin/products");
+}
+
+export async function importSapoExcelAction(formData: FormData) {
+  await ensureAdmin();
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false as const, message: "Chưa chọn file Excel" };
+  }
+  if (!file.name.toLowerCase().endsWith(".xlsx")) {
+    return { ok: false as const, message: "Chỉ hỗ trợ file .xlsx" };
+  }
+
+  const { importSapoExcelBuffer } = await import("@/lib/sapo/excel-import");
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const result = await importSapoExcelBuffer(buffer);
+
+  revalidatePath("/admin/products");
+  revalidatePath("/admin/categories");
+  revalidatePath("/admin/crm");
+
+  return {
+    ok: true as const,
+    products: result.products,
+    variants: result.variants,
+    images: result.images,
+    errors: result.errors.length,
+    message: result.errors[0],
+  };
 }
 
 export async function deleteProductAction(formData: FormData) {

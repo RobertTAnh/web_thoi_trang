@@ -12,12 +12,11 @@ export default async function EditProductPage({
   const [product, categories] = await Promise.all([
     prisma.product.findUnique({
       where: { id },
-      include: { variants: true },
+      include: { variants: { orderBy: { createdAt: "asc" } } },
     }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
   ]);
   if (!product) notFound();
-  const variant = product.variants[0];
 
   return (
     <div>
@@ -30,7 +29,7 @@ export default async function EditProductPage({
           </button>
         </form>
       </div>
-      <div className="mt-6 max-w-2xl border border-line bg-white p-6">
+      <div className="mt-6 max-w-3xl border border-line bg-white p-6">
         <ProductForm
           categories={categories}
           product={{
@@ -39,15 +38,22 @@ export default async function EditProductPage({
             brand: product.brand,
             description: product.description,
             categoryId: product.categoryId,
-            image: product.images[0] || "",
+            images: product.images,
             published: product.published,
             featured: product.featured,
-            price: variant?.price || 0,
-            compareAt: variant?.compareAt || 0,
-            stock: variant?.stock || 0,
-            color: variant?.color || "",
-            size: variant?.size || "",
             sapoProductId: product.sapoProductId,
+            variants: product.variants.map((v) => ({
+              id: v.id,
+              sku: v.sku || "",
+              color: v.color || "",
+              size: v.size || "",
+              price: v.price,
+              compareAt: v.compareAt,
+              costPrice: v.costPrice,
+              wholesalePrice: v.wholesalePrice,
+              stock: v.stock,
+              image: v.image,
+            })),
           }}
         />
       </div>
