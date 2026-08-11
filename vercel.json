@@ -1,4 +1,21 @@
 {
-  "framework": "nextjs",
-  "regions": ["sin1"]
+  "regions": [
+    "sin1"
+  ],
+  "services": {
+    "web": {
+      "root": ".",
+      "framework": "nextjs",
+      "buildCommand": "npm run build"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": {
+        "type": "service",
+        "service": "web"
+      }
+    }
+  ]
 }
