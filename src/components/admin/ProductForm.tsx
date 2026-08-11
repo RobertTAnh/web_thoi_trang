@@ -53,6 +53,24 @@ function marginLabel(price: number, cost: number | null | undefined) {
   return `${formatVnd(profit)} (${pct}%)`;
 }
 
+type BulkFields = {
+  compareAt: string;
+  price: string;
+  costPrice: string;
+  wholesalePrice: string;
+  stock: string;
+};
+
+function bulkFromVariant(v?: VariantFormRow): BulkFields {
+  return {
+    compareAt: v?.compareAt != null ? String(v.compareAt) : "",
+    price: v?.price != null ? String(v.price) : "",
+    costPrice: v?.costPrice != null ? String(v.costPrice) : "",
+    wholesalePrice: v?.wholesalePrice != null ? String(v.wholesalePrice) : "",
+    stock: v?.stock != null ? String(v.stock) : "",
+  };
+}
+
 export function ProductForm({
   categories,
   product,
@@ -66,6 +84,10 @@ export function ProductForm({
   const [imagesText, setImagesText] = useState(
     (product?.images || []).join("\n"),
   );
+  const [bulk, setBulk] = useState<BulkFields>(() =>
+    bulkFromVariant(product?.variants?.[0]),
+  );
+  const [bulkMsg, setBulkMsg] = useState<string | null>(null);
 
   const galleryPreview = useMemo(
     () =>
@@ -78,6 +100,23 @@ export function ProductForm({
 
   function updateVariant(index: number, patch: Partial<VariantFormRow>) {
     setVariants((prev) => prev.map((v, i) => (i === index ? { ...v, ...patch } : v)));
+  }
+
+  function applyBulkToAll() {
+    const patch: Partial<VariantFormRow> = {};
+    if (bulk.compareAt !== "") patch.compareAt = Number(bulk.compareAt);
+    if (bulk.price !== "") patch.price = Number(bulk.price);
+    if (bulk.costPrice !== "") patch.costPrice = Number(bulk.costPrice);
+    if (bulk.wholesalePrice !== "") patch.wholesalePrice = Number(bulk.wholesalePrice);
+    if (bulk.stock !== "") patch.stock = Number(bulk.stock);
+
+    if (!Object.keys(patch).length) {
+      setBulkMsg("Điền ít nhất 1 ô rồi bấm Áp dụng.");
+      return;
+    }
+
+    setVariants((prev) => prev.map((v) => ({ ...v, ...patch })));
+    setBulkMsg(`Đã áp dụng cho ${variants.length} biến thể. Sửa lệch ở từng dòng bên dưới nếu cần.`);
   }
 
   return (
@@ -140,6 +179,79 @@ export function ProductForm({
         )}
       </div>
 
+      <div className="space-y-3 border-2 border-accent/40 bg-accent-soft/30 p-4">
+        <div>
+          <h3 className="font-medium">Giá &amp; tồn — áp dụng tất cả biến thể</h3>
+          <p className="mt-1 text-xs text-muted">
+            Sửa ở đây rồi bấm Áp dụng để cập nhật mọi biến thể. Ô trống = giữ nguyên.
+            Biến thể lệch giá sửa riêng bên dưới.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <label className="block space-y-1">
+            <span className="text-xs text-muted">Giá gốc</span>
+            <input
+              type="number"
+              value={bulk.compareAt}
+              onChange={(e) => setBulk((b) => ({ ...b, compareAt: e.target.value }))}
+              className="w-full border border-line bg-white px-2 py-1.5"
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted">Giá bán (web)</span>
+            <input
+              type="number"
+              value={bulk.price}
+              onChange={(e) => setBulk((b) => ({ ...b, price: e.target.value }))}
+              className="w-full border border-line bg-white px-2 py-1.5"
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted">Giá nhập</span>
+            <input
+              type="number"
+              value={bulk.costPrice}
+              onChange={(e) => setBulk((b) => ({ ...b, costPrice: e.target.value }))}
+              className="w-full border border-line bg-white px-2 py-1.5"
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted">Giá buôn</span>
+            <input
+              type="number"
+              value={bulk.wholesalePrice}
+              onChange={(e) => setBulk((b) => ({ ...b, wholesalePrice: e.target.value }))}
+              className="w-full border border-line bg-white px-2 py-1.5"
+            />
+          </label>
+          <label className="block space-y-1">
+            <span className="text-xs text-muted">Tồn kho</span>
+            <input
+              type="number"
+              value={bulk.stock}
+              onChange={(e) => setBulk((b) => ({ ...b, stock: e.target.value }))}
+              className="w-full border border-line bg-white px-2 py-1.5"
+            />
+          </label>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={applyBulkToAll}
+            className="bg-accent px-4 py-2 text-sm text-white hover:bg-accent-hover"
+          >
+            Áp dụng cho {variants.length} biến thể
+          </button>
+          {bulk.price && bulk.costPrice && (
+            <p className="text-xs text-muted">
+              Lãi ước tính:{" "}
+              <strong>{marginLabel(Number(bulk.price), Number(bulk.costPrice))}</strong>
+            </p>
+          )}
+          {bulkMsg && <p className="text-xs text-accent">{bulkMsg}</p>}
+        </div>
+      </div>
+
       <div className="space-y-3 border border-line p-3">
         <div className="flex items-center justify-between">
           <h3 className="font-medium">Biến thể</h3>
@@ -152,7 +264,7 @@ export function ProductForm({
           </button>
         </div>
         <p className="text-xs text-muted">
-          Mỗi khối = 1 biến thể (màu + size). Giá bán − giá nhập = lãi.
+          Mỗi khối = 1 biến thể (màu + size). Sửa lệch sau khi áp dụng khối chính.
         </p>
         {variants.map((v, index) => (
           <div key={v.id || index} className="space-y-3 border-t border-line pt-3">
