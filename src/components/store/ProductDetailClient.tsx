@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatVnd, discountPercent } from "@/lib/utils";
@@ -19,15 +19,34 @@ type Variant = {
   sku: string | null;
 };
 
-const coupons = [
-  { code: "TISORA10", desc: "Giảm 10% đơn từ 2 triệu" },
-  { code: "TISORA15", desc: "Giảm 15% đơn từ 5 triệu" },
-  { code: "FREESHIP", desc: "Freeship đơn từ 1 triệu" },
-];
+type CouponItem = {
+  code: string;
+  description: string | null;
+  percentOff: number | null;
+  amountOff: number | null;
+  freeShip: boolean;
+  minOrder: number;
+};
+
+type CategoryLink = { name: string; slug: string };
+
+const COUPON_STORAGE_KEY = "tisora_coupon";
+
+function couponLabel(c: CouponItem) {
+  if (c.description) return c.description;
+  const parts: string[] = [];
+  if (c.percentOff) parts.push(`Giảm ${c.percentOff}%`);
+  if (c.amountOff) parts.push(`Giảm ${formatVnd(c.amountOff)}`);
+  if (c.freeShip) parts.push("Freeship");
+  if (c.minOrder > 0) parts.push(`đơn từ ${formatVnd(c.minOrder)}`);
+  return parts.join(" · ") || `Mã ${c.code}`;
+}
 
 export function ProductDetailClient({
   product,
   flashEndsAt,
+  coupons = [],
+  relatedCategories = [],
 }: {
   product: {
     name: string;
@@ -37,6 +56,8 @@ export function ProductDetailClient({
     variants: Variant[];
   };
   flashEndsAt?: string | Date | null;
+  coupons?: CouponItem[];
+  relatedCategories?: CategoryLink[];
 }) {
   const gallery = product.images.length
     ? product.images
@@ -44,6 +65,18 @@ export function ProductDetailClient({
   const [activeImg, setActiveImg] = useState(0);
   const [qty, setQty] = useState(1);
   const [tab, setTab] = useState<"desc" | "ship" | "return">("desc");
+  const [objectPos, setObjectPos] = useState<"top" | "bottom">("bottom");
+  const [appliedCode, setAppliedCode] = useState<string | null>(null);
+  const [applyMsg, setApplyMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(COUPON_STORAGE_KEY);
+      if (saved) setAppliedCode(saved);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   const colors = useMemo(
     () => [...new Set(product.variants.map((v) => v.color).filter(Boolean))] as string[],
@@ -64,24 +97,48 @@ export function ProductDetailClient({
   );
   const [size, setSize] = useState(sizes[0] || null);
 
+  useEffect(() => {
+    if (sizes.length && size && !sizes.includes(size)) {
+      setSize(sizes[0] || null);
+    }
+  }, [sizes, size]);
+
   const variant =
     product.variants.find(
       (v) => (!color || v.color === color) && (!size || v.size === size),
     ) || product.variants[0];
 
   const pct = discountPercent(variant.price, variant.compareAt);
-  const save =
-    variant.compareAt && variant.compareAt > variant.price
-      ? variant.compareAt - variant.price
-      : 0;
+  const currentSrc = gallery[activeImg] || gallery[0];
+
+  useEffect(() => {
+    setObjectPos("bottom");
+  }, [activeImg, currentSrc]);
+
+  function applyCoupon(code: string) {
+    try {
+      sessionStorage.setItem(COUPON_STORAGE_KEY, code);
+    } catch {
+      /* ignore */
+    }
+    setAppliedCode(code);
+    setApplyMsg(`Đã chọn mã ${code} — dùng khi thanh toán`);
+    navigator.clipboard?.writeText(code).catch(() => undefined);
+  }
+
+  function onMainImageLoad(img: HTMLImageElement) {
+    const ratio = img.naturalWidth / Math.max(img.naturalHeight, 1);
+    // Vuông / ngang → dính trên; ảnh dọc → sát đáy khung 4:3
+    setObjectPos(ratio >= 0.92 ? "top" : "bottom");
+  }
 
   return (
     <div>
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* Gallery — thumbnail dọc bên trái như EGA Style */}
+        {/* Gallery */}
         <div className="flex gap-2 md:gap-3">
           <div className="flex w-14 shrink-0 flex-col gap-2 sm:w-16 md:w-[72px]">
-            {gallery.slice(0, 6).map((src, i) => (
+            {gallery.slice(0, 8).map((src, i) => (
               <button
                 key={src + i}
                 type="button"
@@ -94,29 +151,24 @@ export function ProductDetailClient({
                   src={src}
                   alt=""
                   fill
-                  className="object-cover"
+                  className="object-cover object-top"
                   sizes="72px"
                   unoptimized={src.startsWith("/api/media/")}
                 />
               </button>
             ))}
           </div>
-          <div className="relative min-w-0 flex-1 aspect-[3/4] overflow-hidden bg-[#f5f5f5]">
+          <div className="relative min-w-0 flex-1 aspect-[4/3] overflow-hidden bg-[#f5f5f5]">
             <Image
-              src={gallery[activeImg] || gallery[0]}
+              src={currentSrc}
               alt={product.name}
               fill
-              className="object-cover"
+              className={`object-cover ${objectPos === "top" ? "object-top" : "object-bottom"}`}
               sizes="(max-width:1024px) 60vw, 40vw"
               priority
-              unoptimized={(gallery[activeImg] || gallery[0]).startsWith("/api/media/")}
+              unoptimized={currentSrc.startsWith("/api/media/")}
+              onLoadingComplete={(img) => onMainImageLoad(img)}
             />
-            {pct > 0 && (
-              <span className="badge-sale absolute top-3 left-3 text-sm">-{pct}%</span>
-            )}
-            <span className="absolute top-3 right-3 bg-white px-2 py-1 text-[11px] font-medium text-accent">
-              {variant.stock > 0 ? "Còn hàng" : "Hết hàng"}
-            </span>
             {gallery.length > 1 && (
               <>
                 <button
@@ -142,24 +194,22 @@ export function ProductDetailClient({
           </div>
         </div>
 
-        {/* Info — layout giống EGA PDP */}
+        {/* Info — layout kiểu đối thủ */}
         <div>
-          <h1 className="text-[26px] leading-tight font-semibold md:text-[32px]">
+          <h1 className="text-[22px] leading-snug font-semibold md:text-[28px]">
             {product.name}
           </h1>
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-muted">
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted">
+            <p>
+              Mã sản phẩm:{" "}
+              <span className="font-medium text-ink">{variant.sku || "—"}</span>
+            </p>
             {product.brand && (
               <p>
-                Thương hiệu:{" "}
+                | Thương hiệu:{" "}
                 <span className="font-medium text-ink">{product.brand}</span>
               </p>
             )}
-            <p>
-              Mã sản phẩm:{" "}
-              <span className="font-medium text-ink">
-                {variant.sku || "DEMO001"}
-              </span>
-            </p>
           </div>
 
           {flashEndsAt && (
@@ -167,87 +217,30 @@ export function ProductDetailClient({
               <p className="text-[13px] font-bold text-accent uppercase">
                 Giảm sốc {pct || 50}%
               </p>
-              <div className="mt-2 scale-90 origin-left">
+              <div className="mt-2 origin-left scale-90">
                 <Countdown endsAt={flashEndsAt} />
               </div>
             </div>
           )}
 
-          <div className="mt-4 flex flex-wrap items-end gap-3 border-b border-line pb-4">
-            <span className="price-sale text-[28px]">{formatVnd(variant.price)}</span>
-            {variant.compareAt && variant.compareAt > variant.price && (
-              <>
-                <span className="text-[16px] text-muted line-through">
-                  {formatVnd(variant.compareAt)}
-                </span>
-                <span className="badge-sale">-{pct}%</span>
-              </>
-            )}
-          </div>
-          {save > 0 && (
-            <p className="mt-2 text-[13px] text-muted">
-              (Tiết kiệm: {formatVnd(save)})
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="price-sale text-[28px] md:text-[32px]">
+                {formatVnd(variant.price)}
+              </span>
+              {variant.compareAt && variant.compareAt > variant.price && (
+                <>
+                  <span className="text-[15px] text-muted line-through">
+                    {formatVnd(variant.compareAt)}
+                  </span>
+                  <span className="badge-sale">-{pct}%</span>
+                </>
+              )}
+            </div>
+            <p className="text-[13px] text-muted">
+              {variant.stock > 0 ? `${variant.stock} sản phẩm` : "Hết hàng"}
             </p>
-          )}
-
-          <div className="mt-4 border border-line">
-            <div className="bg-[#f8f9fa] px-3 py-2 text-[13px] font-semibold uppercase">
-              Khuyến mãi - Ưu đãi
-            </div>
-            <ul className="space-y-1.5 px-3 py-3 text-[13px] text-muted">
-              <li>• Nhập mã <b className="text-accent">TISORA</b> thêm 5% đơn hàng</li>
-              <li>• Đồng giá Ship toàn quốc 25.000đ</li>
-              <li>• Hỗ trợ 10.000 phí Ship đơn từ 200.000đ</li>
-              <li>• Miễn phí Ship đơn từ 300.000đ</li>
-              <li>• Đổi trả trong 30 ngày nếu sản phẩm lỗi</li>
-            </ul>
           </div>
-
-          <div className="mt-4">
-            <p className="mb-2 text-[13px] font-semibold">Mã giảm giá</p>
-            <div className="flex flex-wrap gap-2">
-              {coupons.map((c) => (
-                <button
-                  key={c.code}
-                  type="button"
-                  title={c.desc}
-                  className="border border-dashed border-accent px-3 py-1.5 text-[12px] font-semibold text-accent"
-                  onClick={() => navigator.clipboard?.writeText(c.code)}
-                >
-                  {c.code}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {sizes.length > 0 && (
-            <div className="mt-5">
-              <div className="mb-2 flex items-center justify-between text-[13px]">
-                <p>
-                  Kích thước: <b>{size}</b>
-                </p>
-                <button type="button" className="text-accent underline">
-                  Hướng dẫn chọn size
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {sizes.map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setSize(s)}
-                    className={`min-w-11 border px-3 py-2 text-[13px] ${
-                      size === s
-                        ? "border-ink bg-ink text-white"
-                        : "border-line hover:border-ink"
-                    }`}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           {colors.length > 0 && (
             <div className="mt-5">
@@ -261,11 +254,11 @@ export function ProductDetailClient({
                     type="button"
                     onClick={() => {
                       setColor(c);
-                      const next = product.variants
+                      const nextSizes = product.variants
                         .filter((v) => v.color === c)
                         .map((v) => v.size)
-                        .filter(Boolean);
-                      setSize((next[0] as string) || null);
+                        .filter(Boolean) as string[];
+                      setSize(nextSizes[0] || null);
                     }}
                     className={`border px-3 py-2 text-[13px] ${
                       color === c
@@ -280,8 +273,34 @@ export function ProductDetailClient({
             </div>
           )}
 
+          {sizes.length > 0 && (
+            <div className="mt-5">
+              <div className="mb-2 flex items-center justify-between text-[13px]">
+                <p>
+                  Kích thước: <b>{size}</b>
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {sizes.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setSize(s)}
+                    className={`min-w-11 rounded-full border px-3 py-2 text-[13px] ${
+                      size === s
+                        ? "border-accent text-accent"
+                        : "border-line hover:border-ink"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mt-5 flex items-center gap-3">
-            <span className="text-[13px]">Số lượng:</span>
+            <span className="text-[13px]">Số lượng</span>
             <div className="flex border border-line">
               <button
                 type="button"
@@ -294,27 +313,76 @@ export function ProductDetailClient({
               <button
                 type="button"
                 className="px-3 py-2"
-                onClick={() => setQty((q) => q + 1)}
+                onClick={() => setQty((q) => Math.min(variant.stock || 99, q + 1))}
               >
                 +
               </button>
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-2">
+          {coupons.length > 0 && (
+            <div className="mt-5 overflow-hidden rounded border border-accent bg-accent">
+              <p className="px-3 py-2 text-[13px] font-bold tracking-wide text-white uppercase">
+                Mã giảm giá
+              </p>
+              <div className="space-y-0 bg-accent">
+                {coupons.map((c) => (
+                  <div
+                    key={c.code}
+                    className="flex items-center gap-3 border-t border-white/20 px-3 py-2.5"
+                  >
+                    <p className="min-w-0 flex-1 text-[12px] leading-snug text-white">
+                      <span className="font-semibold">{c.code}</span>
+                      {" — "}
+                      {couponLabel(c)}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => applyCoupon(c.code)}
+                      className="shrink-0 bg-white px-3 py-1.5 text-[12px] font-semibold text-accent uppercase"
+                    >
+                      {appliedCode === c.code ? "Đã chọn" : "Áp dụng"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+              {applyMsg && (
+                <p className="bg-white/10 px-3 py-2 text-[12px] text-white">{applyMsg}</p>
+              )}
+            </div>
+          )}
+
+          <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
             <AddToCartButton
               variantId={variant.id}
               quantity={qty}
-              className="btn-dark w-full py-3.5 text-[13px] disabled:opacity-50"
-              label="Thêm vào giỏ"
+              className="w-full border-2 border-accent bg-white py-3.5 text-[13px] font-semibold tracking-wide text-accent uppercase disabled:opacity-50"
+              label="Thêm vào giỏ hàng"
             />
             <Link
-              href="/thanh-toan"
+              href="/gio-hang"
               className="btn-primary flex items-center justify-center py-3.5 text-[13px]"
             >
-              Mua ngay
+              Thông tin giỏ hàng
             </Link>
           </div>
+
+          {relatedCategories.length > 0 && (
+            <p className="mt-5 text-[13px] leading-6 text-muted">
+              <span className="font-medium text-ink">Có thể bạn sẽ thích: </span>
+              {relatedCategories.map((cat, i) => (
+                <span key={cat.slug}>
+                  <Link
+                    href={`/collections/${cat.slug}`}
+                    className="text-ink underline-offset-2 hover:text-accent hover:underline"
+                  >
+                    {cat.name}
+                  </Link>
+                  {i < relatedCategories.length - 1 ? ", " : ""}
+                </span>
+              ))}
+            </p>
+          )}
 
           <p className="mt-4 text-center text-[13px] text-muted">
             Gọi đặt mua{" "}
@@ -323,25 +391,9 @@ export function ProductDetailClient({
             </a>{" "}
             (7:30 - 22:00)
           </p>
-
-          <div className="mt-5 grid grid-cols-3 gap-2 border-t border-line pt-4 text-center text-[11px] text-muted">
-            <div>
-              <p className="font-medium text-ink">Giao hàng</p>
-              <p>Toàn quốc</p>
-            </div>
-            <div>
-              <p className="font-medium text-ink">Tích điểm</p>
-              <p>Mọi sản phẩm</p>
-            </div>
-            <div>
-              <p className="font-medium text-ink">Giảm 5%</p>
-              <p>Thanh toán online</p>
-            </div>
-          </div>
         </div>
       </div>
 
-      {/* Tabs mô tả */}
       <div className="mt-12 border border-line">
         <div className="flex flex-wrap border-b border-line">
           {(

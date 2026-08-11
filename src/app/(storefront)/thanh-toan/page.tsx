@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { getCart, cartTotals } from "@/lib/cart";
 import { formatVnd } from "@/lib/utils";
 import { checkoutAction } from "@/app/actions/checkout";
+import { CouponCodeInput } from "@/components/store/CouponCodeInput";
 
 export const metadata = { title: "Thanh toán" };
 
@@ -60,11 +61,7 @@ export default async function CheckoutPage() {
             rows={3}
             className="w-full border border-line bg-surface px-3 py-3 text-sm outline-none focus:border-ink"
           />
-          <input
-            name="couponCode"
-            placeholder="Mã giảm giá (vd: TISORA10)"
-            className="w-full border border-line bg-surface px-3 py-3 text-sm outline-none focus:border-ink"
-          />
+          <CouponCodeInput />
 
           <fieldset className="space-y-3 pt-4">
             <legend className="font-display text-2xl">Phương thức thanh toán</legend>

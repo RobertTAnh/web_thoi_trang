@@ -258,28 +258,35 @@ export async function deleteProductAction(formData: FormData) {
 
 export async function saveCouponAction(formData: FormData) {
   await ensureAdmin();
-  const code = String(formData.get("code") || "").toUpperCase();
+  const code = String(formData.get("code") || "").toUpperCase().trim();
+  if (!code) throw new Error("Thiếu mã giảm giá");
+
+  const data = {
+    description: String(formData.get("description") || "") || null,
+    percentOff: Number(formData.get("percentOff") || 0) || null,
+    amountOff: Number(formData.get("amountOff") || 0) || null,
+    minOrder: Number(formData.get("minOrder") || 0),
+    maxDiscount: Number(formData.get("maxDiscount") || 0) || null,
+    freeShip: formData.get("freeShip") === "on",
+    active: formData.get("active") === "on",
+  };
+
   await prisma.coupon.upsert({
     where: { code },
-    update: {
-      description: String(formData.get("description") || "") || null,
-      percentOff: Number(formData.get("percentOff") || 0) || null,
-      minOrder: Number(formData.get("minOrder") || 0),
-      maxDiscount: Number(formData.get("maxDiscount") || 0) || null,
-      freeShip: formData.get("freeShip") === "on",
-      active: formData.get("active") === "on",
-    },
-    create: {
-      code,
-      description: String(formData.get("description") || "") || null,
-      percentOff: Number(formData.get("percentOff") || 0) || null,
-      minOrder: Number(formData.get("minOrder") || 0),
-      maxDiscount: Number(formData.get("maxDiscount") || 0) || null,
-      freeShip: formData.get("freeShip") === "on",
-      active: true,
-    },
+    update: data,
+    create: { code, ...data, active: data.active ?? true },
   });
   revalidatePath("/admin/coupons");
+  revalidatePath("/products", "layout");
+}
+
+export async function deleteCouponAction(formData: FormData) {
+  await ensureAdmin();
+  const id = String(formData.get("id") || "");
+  if (!id) return;
+  await prisma.coupon.delete({ where: { id } });
+  revalidatePath("/admin/coupons");
+  revalidatePath("/products", "layout");
 }
 
 export async function saveFlashSaleAction(formData: FormData) {

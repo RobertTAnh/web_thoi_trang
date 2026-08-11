@@ -17,7 +17,7 @@ export default async function ProductPage({
 
   if (!product || !product.published) notFound();
 
-  const [flashSale, related] = await Promise.all([
+  const [flashSale, related, coupons, categories] = await Promise.all([
     prisma.flashSale.findFirst({
       where: { active: true, endsAt: { gt: new Date() } },
       orderBy: { endsAt: "asc" },
@@ -31,7 +31,18 @@ export default async function ProductPage({
       include: { variants: true },
       take: 4,
     }),
+    prisma.coupon.findMany({
+      where: { active: true },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+    }),
+    prisma.category.findMany({
+      orderBy: { sortOrder: "asc" },
+      take: 12,
+    }),
   ]);
+
+  const likeCategories = categories.slice(0, 10);
 
   return (
     <div className="container-ega py-6 md:py-10">
@@ -57,6 +68,18 @@ export default async function ProductPage({
       <ProductDetailClient
         product={product}
         flashEndsAt={flashSale?.endsAt ?? null}
+        coupons={coupons.map((c) => ({
+          code: c.code,
+          description: c.description,
+          percentOff: c.percentOff,
+          amountOff: c.amountOff,
+          freeShip: c.freeShip,
+          minOrder: c.minOrder,
+        }))}
+        relatedCategories={likeCategories.map((c) => ({
+          name: c.name,
+          slug: c.slug,
+        }))}
       />
 
       {related.length > 0 && (
