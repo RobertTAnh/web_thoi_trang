@@ -151,77 +151,17 @@ export function ProductForm({
             + Thêm biến thể
           </button>
         </div>
+        <p className="text-xs text-muted">
+          Mỗi khối = 1 biến thể (màu + size). Giá bán − giá nhập = lãi.
+        </p>
         {variants.map((v, index) => (
-          <div key={v.id || index} className="grid gap-2 border-t border-line pt-3 sm:grid-cols-3">
-            <input
-              value={v.sku || ""}
-              onChange={(e) => updateVariant(index, { sku: e.target.value })}
-              placeholder="SKU"
-              className="border border-line px-2 py-1.5"
-            />
-            <input
-              value={v.color || ""}
-              onChange={(e) => updateVariant(index, { color: e.target.value })}
-              placeholder="Màu"
-              className="border border-line px-2 py-1.5"
-            />
-            <input
-              value={v.size || ""}
-              onChange={(e) => updateVariant(index, { size: e.target.value })}
-              placeholder="Size"
-              className="border border-line px-2 py-1.5"
-            />
-            <input
-              type="number"
-              value={v.price ?? 0}
-              onChange={(e) => updateVariant(index, { price: Number(e.target.value) })}
-              placeholder="Giá bán"
-              className="border border-line px-2 py-1.5"
-              required
-            />
-            <input
-              type="number"
-              value={v.costPrice ?? ""}
-              onChange={(e) =>
-                updateVariant(index, {
-                  costPrice: e.target.value === "" ? null : Number(e.target.value),
-                })
-              }
-              placeholder="Giá nhập"
-              className="border border-line px-2 py-1.5"
-            />
-            <input
-              type="number"
-              value={v.wholesalePrice ?? ""}
-              onChange={(e) =>
-                updateVariant(index, {
-                  wholesalePrice: e.target.value === "" ? null : Number(e.target.value),
-                })
-              }
-              placeholder="Giá buôn"
-              className="border border-line px-2 py-1.5"
-            />
-            <input
-              type="number"
-              value={v.compareAt ?? ""}
-              onChange={(e) =>
-                updateVariant(index, {
-                  compareAt: e.target.value === "" ? null : Number(e.target.value),
-                })
-              }
-              placeholder="Giá gốc"
-              className="border border-line px-2 py-1.5"
-            />
-            <input
-              type="number"
-              value={v.stock ?? 0}
-              onChange={(e) => updateVariant(index, { stock: Number(e.target.value) })}
-              placeholder="Tồn"
-              className="border border-line px-2 py-1.5"
-            />
-            <div className="flex items-center justify-between gap-2 sm:col-span-1">
-              <p className="text-xs text-muted">
-                Lãi: {marginLabel(v.price || 0, v.costPrice)}
+          <div key={v.id || index} className="space-y-3 border-t border-line pt-3">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium text-muted">
+                #{index + 1}
+                {v.color || v.size
+                  ? ` · ${[v.color, v.size].filter(Boolean).join(" / ")}`
+                  : ""}
               </p>
               {variants.length > 1 && (
                 <button
@@ -232,6 +172,102 @@ export function ProductForm({
                   Xóa
                 </button>
               )}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="block space-y-1">
+                <span className="text-xs text-muted">SKU</span>
+                <input
+                  value={v.sku || ""}
+                  onChange={(e) => updateVariant(index, { sku: e.target.value })}
+                  className="w-full border border-line px-2 py-1.5"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-xs text-muted">Màu</span>
+                <input
+                  value={v.color || ""}
+                  onChange={(e) => updateVariant(index, { color: e.target.value })}
+                  className="w-full border border-line px-2 py-1.5"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-xs text-muted">Size</span>
+                <input
+                  value={v.size || ""}
+                  onChange={(e) => updateVariant(index, { size: e.target.value })}
+                  className="w-full border border-line px-2 py-1.5"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="block space-y-1">
+                <span className="text-xs text-muted">Giá bán (lẻ)</span>
+                <input
+                  type="number"
+                  value={v.price ?? 0}
+                  onChange={(e) => updateVariant(index, { price: Number(e.target.value) })}
+                  className="w-full border border-line px-2 py-1.5"
+                  required
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-xs text-muted">Giá nhập</span>
+                <input
+                  type="number"
+                  value={v.costPrice ?? ""}
+                  onChange={(e) =>
+                    updateVariant(index, {
+                      costPrice: e.target.value === "" ? null : Number(e.target.value),
+                    })
+                  }
+                  className="w-full border border-line px-2 py-1.5"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-xs text-muted">Giá buôn</span>
+                <input
+                  type="number"
+                  value={v.wholesalePrice ?? ""}
+                  onChange={(e) =>
+                    updateVariant(index, {
+                      wholesalePrice: e.target.value === "" ? null : Number(e.target.value),
+                    })
+                  }
+                  className="w-full border border-line px-2 py-1.5"
+                />
+              </label>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <label className="block space-y-1">
+                <span className="text-xs text-muted">Giá gốc (gạch ngang)</span>
+                <input
+                  type="number"
+                  value={v.compareAt ?? ""}
+                  onChange={(e) =>
+                    updateVariant(index, {
+                      compareAt: e.target.value === "" ? null : Number(e.target.value),
+                    })
+                  }
+                  className="w-full border border-line px-2 py-1.5"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-xs text-muted">Tồn kho</span>
+                <input
+                  type="number"
+                  value={v.stock ?? 0}
+                  onChange={(e) => updateVariant(index, { stock: Number(e.target.value) })}
+                  className="w-full border border-line px-2 py-1.5"
+                />
+              </label>
+              <div className="flex items-end">
+                <p className="w-full border border-dashed border-line bg-[#faf7f5] px-2 py-1.5 text-xs">
+                  Lãi / SP: <strong>{marginLabel(v.price || 0, v.costPrice)}</strong>
+                </p>
+              </div>
             </div>
           </div>
         ))}
