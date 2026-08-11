@@ -134,9 +134,9 @@ export function ProductDetailClient({
 
   return (
     <div>
-      <div className="grid gap-8 lg:grid-cols-2">
-        {/* Gallery */}
-        <div className="flex gap-2 md:gap-3">
+      <div className="grid items-start gap-8 lg:grid-cols-2">
+        {/* Gallery — khung 4:3 cố định, không bị kéo theo cột phải */}
+        <div className="flex w-full gap-2 self-start md:gap-3">
           <div className="flex w-14 shrink-0 flex-col gap-2 sm:w-16 md:w-[72px]">
             {gallery.slice(0, 8).map((src, i) => (
               <button
@@ -158,7 +158,10 @@ export function ProductDetailClient({
               </button>
             ))}
           </div>
-          <div className="relative min-w-0 flex-1 aspect-[4/3] overflow-hidden bg-[#f5f5f5]">
+          <div
+            className="relative min-w-0 flex-1 overflow-hidden bg-[#f5f5f5]"
+            style={{ aspectRatio: "4 / 3" }}
+          >
             <Image
               src={currentSrc}
               alt={product.name}
@@ -174,7 +177,7 @@ export function ProductDetailClient({
                 <button
                   type="button"
                   aria-label="Ảnh trước"
-                  className="absolute top-1/2 left-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow"
+                  className="absolute top-1/2 left-2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow"
                   onClick={() =>
                     setActiveImg((i) => (i - 1 + gallery.length) % gallery.length)
                   }
@@ -184,7 +187,7 @@ export function ProductDetailClient({
                 <button
                   type="button"
                   aria-label="Ảnh sau"
-                  className="absolute top-1/2 right-2 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow"
+                  className="absolute top-1/2 right-2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow"
                   onClick={() => setActiveImg((i) => (i + 1) % gallery.length)}
                 >
                   ›
