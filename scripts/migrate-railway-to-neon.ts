@@ -4,14 +4,17 @@
  * Requires: pg_dump, pg_restore on PATH
  * Env:
  *   RAILWAY_DATABASE_URL  (source)
- *   DIRECT_URL            (Neon direct connection string)
+ *   DIRECT_URL | DATABASE_URL_UNPOOLED  (Neon direct)
  */
 import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 
 const source = process.env.RAILWAY_DATABASE_URL;
-const target = process.env.DIRECT_URL || process.env.NEON_DIRECT_URL;
+const target =
+  process.env.DIRECT_URL ||
+  process.env.DATABASE_URL_UNPOOLED ||
+  process.env.NEON_DIRECT_URL;
 const dumpFile = path.join(process.cwd(), "railway.dump");
 
 function run(cmd: string) {
@@ -25,7 +28,7 @@ function main() {
     process.exit(1);
   }
   if (!target) {
-    console.error("Missing DIRECT_URL (Neon direct)");
+    console.error("Missing DIRECT_URL or DATABASE_URL_UNPOOLED (Neon direct)");
     process.exit(1);
   }
 

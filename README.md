@@ -15,7 +15,7 @@ Next.js e-commerce thời trang (layout tham chiếu EGA Style / Sapo): storefro
 ```bash
 docker compose up -d
 npm install
-# .env: DATABASE_URL + DIRECT_URL trỏ localhost:5433 (có thể giống nhau)
+# .env: DATABASE_URL + DATABASE_URL_UNPOOLED trỏ localhost:5433 (có thể giống nhau)
 npm run db:setup
 npm run dev
 ```
@@ -38,9 +38,9 @@ npm run dev
 ### 1. Tạo database Neon
 
 1. Vào [console.neon.tech](https://console.neon.tech) → **New Project** (region Singapore nếu có)
-2. Copy 2 connection strings:
+2. Copy 2 connection strings (hoặc dùng Neon integration trên Vercel):
    - **Pooled / Transaction** → `DATABASE_URL`
-   - **Direct** → `DIRECT_URL`
+   - **Direct / Unpooled** → `DATABASE_URL_UNPOOLED`
 3. Cả hai nên có `?sslmode=require`
 
 ### 2. Migrate data từ Railway (nếu đang có data)
@@ -49,8 +49,8 @@ npm run dev
 # Export Railway Postgres
 pg_dump "$RAILWAY_DATABASE_URL" -Fc -f railway.dump
 
-# Restore vào Neon (dùng DIRECT_URL)
-pg_restore --clean --if-exists --no-owner --no-acl -d "$DIRECT_URL" railway.dump
+# Restore vào Neon (dùng DATABASE_URL_UNPOOLED)
+pg_restore --clean --if-exists --no-owner --no-acl -d "$DATABASE_URL_UNPOOLED" railway.dump
 ```
 
 Hoặc dùng script helper (cần `pg_dump` / `pg_restore` trên máy):
@@ -58,14 +58,22 @@ Hoặc dùng script helper (cần `pg_dump` / `pg_restore` trên máy):
 ```bash
 # Windows PowerShell
 $env:RAILWAY_DATABASE_URL="postgresql://..."
-$env:DIRECT_URL="postgresql://...neon..."
+$env:DATABASE_URL_UNPOOLED="postgresql://...neon..."
 npm run db:migrate-railway-neon
+```
+
+Nếu không lấy được Railway URL: import lại catalog từ Excel vào Neon:
+
+```bash
+# .env.local đã trỏ Neon
+npm run db:import-sapo
+npm run db:verify
 ```
 
 Verify:
 
 ```bash
-npx tsx -e "const {PrismaClient}=require('@prisma/client'); const p=new PrismaClient(); Promise.all([p.product.count(),p.mediaAsset.count()]).then(console.log).finally(()=>p.$disconnect())"
+npm run db:verify
 ```
 
 Giữ Railway **không xóa** cho đến khi Vercel chạy ổn.
@@ -83,7 +91,7 @@ git push -u origin main
 | Key | Giá trị |
 |-----|---------|
 | `DATABASE_URL` | Neon **pooled** |
-| `DIRECT_URL` | Neon **direct** |
+| `DATABASE_URL_UNPOOLED` | Neon **direct** |
 | `AUTH_SECRET` | `openssl rand -base64 32` |
 | `AUTH_URL` | `https://<project>.vercel.app` (đổi sau khi có domain) |
 | `AUTH_TRUST_HOST` | `true` |
@@ -116,7 +124,7 @@ npm run db:import-sapo
 
 ### Lưu ý Vercel
 
-- Build chạy `prisma generate && prisma db push && next build` (cần `DIRECT_URL`)
+- Build chạy `prisma generate && prisma db push && next build` (cần `DATABASE_URL_UNPOOLED`)
 - Không seed mỗi deploy
 - Ảnh binary trong Neon chiếm storage — Free ~0.5GB; monitor usage
 - Không commit `.env`
