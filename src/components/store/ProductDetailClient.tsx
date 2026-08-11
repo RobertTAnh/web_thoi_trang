@@ -128,7 +128,7 @@ export function ProductDetailClient({
 
   function onMainImageLoad(img: HTMLImageElement) {
     const ratio = img.naturalWidth / Math.max(img.naturalHeight, 1);
-    // Vuông / ngang → dính trên; ảnh dọc → sát đáy khung 4:3
+    // Vuông / ngang → dính trên; ảnh dọc → sát đáy khung 3:4 (4:3 dọc)
     setObjectPos(ratio >= 0.92 ? "top" : "bottom");
   }
 
@@ -160,7 +160,7 @@ export function ProductDetailClient({
           </div>
           <div
             className="relative min-w-0 flex-1 overflow-hidden bg-[#f5f5f5]"
-            style={{ aspectRatio: "4 / 3" }}
+            style={{ aspectRatio: "3 / 4" }}
           >
             <Image
               src={currentSrc}
