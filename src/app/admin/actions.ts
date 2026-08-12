@@ -256,6 +256,33 @@ export async function deleteProductAction(formData: FormData) {
   redirect("/admin/products");
 }
 
+export async function bulkDeleteProductsAction(ids: string[]) {
+  await ensureAdmin();
+  const uniqueIds = [...new Set(ids.map(String).filter(Boolean))].slice(0, 500);
+  if (!uniqueIds.length) {
+    return { ok: false as const, message: "Chưa chọn sản phẩm nào." };
+  }
+
+  const existing = await prisma.product.count({ where: { id: { in: uniqueIds } } });
+  if (existing !== uniqueIds.length) {
+    return { ok: false as const, message: "Danh sách có sản phẩm không còn tồn tại. Hãy tải lại trang." };
+  }
+
+  try {
+    await prisma.product.deleteMany({ where: { id: { in: uniqueIds } } });
+  } catch {
+    return {
+      ok: false as const,
+      message: "Không thể xóa vì một số sản phẩm đã xuất hiện trong giỏ hàng hoặc đơn hàng.",
+    };
+  }
+
+  revalidatePath("/admin/products");
+  revalidatePath("/");
+  revalidatePath("/collections", "layout");
+  return { ok: true as const, message: `Đã xóa ${uniqueIds.length} sản phẩm.` };
+}
+
 export async function saveCouponAction(formData: FormData) {
   await ensureAdmin();
   const code = String(formData.get("code") || "").toUpperCase().trim();
