@@ -18,9 +18,10 @@ export type AdminProductRow = {
   stock: number;
   variantCount: number;
   sapoProductId: string | null;
+  updatedAt: string;
 };
 
-type SortKey = "name" | "category" | "price" | "stock" | "sapo";
+type SortKey = "updated" | "name" | "category" | "price" | "stock" | "sapo";
 type SortDirection = "asc" | "desc";
 
 const collator = new Intl.Collator("vi", { numeric: true, sensitivity: "base" });
@@ -29,8 +30,8 @@ export function ProductsBulkTable({ products }: { products: AdminProductRow[] })
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
   const [sort, setSort] = useState<{ key: SortKey; direction: SortDirection }>({
-    key: "name",
-    direction: "asc",
+    key: "updated",
+    direction: "desc",
   });
   const [message, setMessage] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -38,6 +39,9 @@ export function ProductsBulkTable({ products }: { products: AdminProductRow[] })
   const sortedProducts = useMemo(() => {
     const direction = sort.direction === "asc" ? 1 : -1;
     return [...products].sort((a, b) => {
+      if (sort.key === "updated") {
+        return (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()) * direction;
+      }
       if (sort.key === "price") return (a.minPrice - b.minPrice) * direction;
       if (sort.key === "stock") return (a.stock - b.stock) * direction;
 
@@ -128,6 +132,26 @@ export function ProductsBulkTable({ products }: { products: AdminProductRow[] })
           Chọn tất cả
         </label>
         <span className="text-xs text-muted">Đã chọn {selected.size}/{products.length}</span>
+        <label className="flex items-center gap-2 text-xs text-muted">
+          Sắp xếp
+          <select
+            value={`${sort.key}-${sort.direction}`}
+            onChange={(event) => {
+              const [key, direction] = event.target.value.split("-") as [SortKey, SortDirection];
+              setSort({ key, direction });
+            }}
+            className="border border-line bg-white px-3 py-2 text-xs text-ink outline-none focus:border-accent"
+          >
+            <option value="updated-desc">Mới cập nhật</option>
+            <option value="updated-asc">Cũ cập nhật</option>
+            <option value="name-asc">Tên A–Z</option>
+            <option value="name-desc">Tên Z–A</option>
+            <option value="price-asc">Giá thấp đến cao</option>
+            <option value="price-desc">Giá cao đến thấp</option>
+            <option value="stock-desc">Tồn kho nhiều nhất</option>
+            <option value="stock-asc">Tồn kho ít nhất</option>
+          </select>
+        </label>
         <button
           type="button"
           onClick={deleteSelected}

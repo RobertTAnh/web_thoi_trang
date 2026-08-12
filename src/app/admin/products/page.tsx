@@ -66,6 +66,7 @@ export default async function AdminProductsPage() {
           stock: product.variants.reduce((total, variant) => total + variant.stock, 0),
           variantCount: product.variants.length,
           sapoProductId: product.sapoProductId,
+          updatedAt: product.updatedAt.toISOString(),
         })).map((product) => ({
           ...product,
           minPrice: Number.isFinite(product.minPrice) ? product.minPrice : 0,
