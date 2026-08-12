@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { saveProductAction } from "@/app/admin/actions";
+import { useMemo, useState, useTransition } from "react";
+import { saveProductAction, uploadProductImagesAction } from "@/app/admin/actions";
 import { formatVnd } from "@/lib/utils";
 
 type Category = { id: string; name: string };
@@ -88,6 +88,8 @@ export function ProductForm({
     bulkFromVariant(product?.variants?.[0]),
   );
   const [bulkMsg, setBulkMsg] = useState<string | null>(null);
+  const [imageMsg, setImageMsg] = useState<string | null>(null);
+  const [isUploading, startImageUpload] = useTransition();
 
   const galleryPreview = useMemo(
     () =>
@@ -100,6 +102,30 @@ export function ProductForm({
 
   function updateVariant(index: number, patch: Partial<VariantFormRow>) {
     setVariants((prev) => prev.map((v, i) => (i === index ? { ...v, ...patch } : v)));
+  }
+
+  function setGallery(images: string[]) {
+    setImagesText(images.join("\n"));
+  }
+
+  function uploadImages(files: File[], replaceIndex?: number) {
+    if (!files.length) return;
+    setImageMsg(null);
+    startImageUpload(async () => {
+      const data = new FormData();
+      for (const file of files) data.append("images", file);
+      const result = await uploadProductImagesAction(data);
+      setImageMsg(result.message);
+      if (!result.ok) return;
+
+      if (replaceIndex == null) {
+        setGallery([...galleryPreview, ...result.urls]);
+      } else {
+        const next = [...galleryPreview];
+        next[replaceIndex] = result.urls[0];
+        setGallery(next);
+      }
+    });
   }
 
   function applyBulkToAll() {
@@ -159,8 +185,95 @@ export function ProductForm({
       </select>
 
       <div>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="font-medium">Ảnh sản phẩm</p>
+            <p className="text-xs text-muted">
+              Ảnh đầu tiên là ảnh đại diện. Tối đa 10 MB mỗi ảnh, 18 MB mỗi lần tải.
+            </p>
+          </div>
+          <label className="cursor-pointer bg-ink px-4 py-2 text-xs font-semibold text-white hover:bg-accent">
+            {isUploading ? "Đang tải..." : "+ Thêm ảnh"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              disabled={isUploading}
+              className="sr-only"
+              onChange={(event) => {
+                uploadImages(Array.from(event.target.files || []));
+                event.target.value = "";
+              }}
+            />
+          </label>
+        </div>
+
+        {galleryPreview.length > 0 ? (
+          <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {galleryPreview.map((image, index) => (
+              <div key={`${image}-${index}`} className="overflow-hidden border border-line bg-white">
+                <div className="relative aspect-[3/4] bg-[#f5f2ee]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={image} alt={`Ảnh sản phẩm ${index + 1}`} className="h-full w-full object-cover" />
+                  {index === 0 && (
+                    <span className="absolute top-2 left-2 bg-ink/80 px-2 py-1 text-[10px] font-semibold text-white">
+                      Ảnh đại diện
+                    </span>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 border-t border-line text-center text-xs">
+                  <label className="cursor-pointer border-r border-line px-2 py-2 text-accent hover:bg-accent-soft">
+                    Thay ảnh
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      disabled={isUploading}
+                      className="sr-only"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        if (file) uploadImages([file], index);
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setGallery(galleryPreview.filter((_, imageIndex) => imageIndex !== index))}
+                    className="px-2 py-2 text-sale hover:bg-red-50"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <label className="mb-3 flex min-h-36 cursor-pointer flex-col items-center justify-center border-2 border-dashed border-line bg-[#faf7f5] text-center hover:border-accent">
+            <span className="text-2xl text-accent">+</span>
+            <span className="mt-1 font-medium">Chọn ảnh từ máy</span>
+            <span className="mt-1 text-xs text-muted">JPG, PNG, WebP hoặc GIF</span>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              disabled={isUploading}
+              className="sr-only"
+              onChange={(event) => {
+                uploadImages(Array.from(event.target.files || []));
+                event.target.value = "";
+              }}
+            />
+          </label>
+        )}
+
+        {imageMsg && (
+          <p className={`mb-3 text-xs ${imageMsg.startsWith("Đã tải") ? "text-green-700" : "text-sale"}`} role="status">
+            {imageMsg}
+          </p>
+        )}
+
         <label className="mb-1 block text-xs text-muted">
-          URL ảnh (mỗi dòng một ảnh, hỗ trợ /api/media/... hoặc CDN)
+          Hoặc nhập URL ảnh (mỗi dòng một ảnh)
         </label>
         <textarea
           value={imagesText}
@@ -169,14 +282,6 @@ export function ProductForm({
           className="w-full border border-line px-3 py-2 font-mono text-xs"
           placeholder="/api/media/...&#10;https://..."
         />
-        {galleryPreview[0] && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={galleryPreview[0]}
-            alt=""
-            className="mt-2 h-28 w-20 object-cover border border-line"
-          />
-        )}
       </div>
 
       <div className="space-y-3 border-2 border-accent/40 bg-accent-soft/30 p-4">

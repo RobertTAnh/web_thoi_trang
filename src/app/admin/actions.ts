@@ -283,6 +283,40 @@ export async function bulkDeleteProductsAction(ids: string[]) {
   return { ok: true as const, message: `Đã xóa ${uniqueIds.length} sản phẩm.` };
 }
 
+export async function uploadProductImagesAction(formData: FormData) {
+  await ensureAdmin();
+  const files = formData
+    .getAll("images")
+    .filter((value): value is File => value instanceof File && value.size > 0)
+    .slice(0, 10);
+
+  if (!files.length) {
+    return { ok: false as const, message: "Chưa chọn ảnh." };
+  }
+  if (files.reduce((total, file) => total + file.size, 0) > 18 * 1024 * 1024) {
+    return { ok: false as const, message: "Tổng dung lượng mỗi lần tải không được quá 18 MB." };
+  }
+
+  const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+  for (const file of files) {
+    if (!allowedTypes.has(file.type)) {
+      return { ok: false as const, message: `Không hỗ trợ định dạng ${file.name}.` };
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      return { ok: false as const, message: `${file.name} vượt quá giới hạn 10 MB.` };
+    }
+  }
+
+  try {
+    const { storeUploadedImage } = await import("@/lib/media");
+    const urls: string[] = [];
+    for (const file of files) urls.push(await storeUploadedImage(file));
+    return { ok: true as const, urls, message: `Đã tải lên ${urls.length} ảnh.` };
+  } catch {
+    return { ok: false as const, message: "Tải ảnh thất bại. Vui lòng thử lại." };
+  }
+}
+
 export async function saveCouponAction(formData: FormData) {
   await ensureAdmin();
   const code = String(formData.get("code") || "").toUpperCase().trim();

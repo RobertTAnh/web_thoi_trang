@@ -9,6 +9,27 @@ export function isMediaPath(url: string | null | undefined) {
   return Boolean(url && url.startsWith("/api/media/"));
 }
 
+export async function storeUploadedImage(file: File) {
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  const existing = await prisma.mediaAsset.findUnique({
+    where: { sha256 },
+    select: { id: true },
+  });
+  if (existing) return mediaPath(existing.id);
+
+  const asset = await prisma.mediaAsset.create({
+    data: {
+      filename: (file.name || "product-image").replace(/[\r\n"]/g, "").slice(0, 180),
+      mimeType: file.type,
+      bytes,
+      sha256,
+    },
+    select: { id: true },
+  });
+  return mediaPath(asset.id);
+}
+
 function guessMime(url: string, contentType: string | null) {
   if (contentType && contentType.startsWith("image/")) {
     return contentType.split(";")[0].trim();
