@@ -93,7 +93,7 @@ git push -u origin main
 | `DATABASE_URL` | Neon **pooled** |
 | `DATABASE_URL_UNPOOLED` | Neon **direct** |
 | `AUTH_SECRET` | `openssl rand -base64 32` |
-| `AUTH_URL` | `https://<project>.vercel.app` (đổi sau khi có domain) |
+| `AUTH_URL` | `https://tisorastore.com` |
 | `AUTH_TRUST_HOST` | `true` |
 | `NEXT_PUBLIC_BRAND_NAME` | `Tisora` |
 | `NEXT_PUBLIC_HOTLINE` | hotline (tuỳ chọn) |

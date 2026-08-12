@@ -65,7 +65,7 @@ if (!databaseUrl || !directUrl) {
 }
 
 const authSecret = local.AUTH_SECRET || randomBytes(32).toString("base64");
-const authUrl = local.AUTH_URL || "https://tisora-fashion.vercel.app";
+const authUrl = local.AUTH_URL || "https://tisorastore.com";
 const envs = ["production", "preview", "development"];
 
 setEnv("DATABASE_URL", databaseUrl, envs);
