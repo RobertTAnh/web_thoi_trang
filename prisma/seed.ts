@@ -262,15 +262,15 @@ async function main() {
   await prisma.banner.createMany({
     data: [
       {
-        title: "Bộ sưu tập Xuân Hè",
-        image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1600&q=80",
+        title: "Đầm hiệu giá tốt",
+        image: "/banners/hero-dam-gia-tot.jpg",
         href: "/collections/dam",
         sortOrder: 1,
       },
       {
-        title: "Flash Sale 50%",
-        image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1600&q=80",
-        href: "/#flash-sale",
+        title: "Dự tiệc sang chảnh",
+        image: "/banners/hero-du-tiec.jpg",
+        href: "/collections/dam",
         sortOrder: 2,
       },
     ],
