@@ -6,6 +6,7 @@ import { Countdown } from "@/components/store/Countdown";
 import { HomeHeroBanner, type HeroSlide } from "@/components/store/HomeHeroBanner";
 import { SectionBar } from "@/components/store/SectionBar";
 import { CopyCouponButton } from "@/components/store/CopyCouponButton";
+import { HomeCategoryTabs } from "@/components/store/HomeCategoryTabs";
 import { formatVnd } from "@/lib/utils";
 
 const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "Tisora";
@@ -23,7 +24,7 @@ export default async function HomePage() {
     hotProducts,
     newProducts,
     categories,
-    reviews,
+    categoryProducts,
     posts,
     minPriceAgg,
   ] = await Promise.all([
@@ -47,17 +48,17 @@ export default async function HomePage() {
     prisma.category.findMany({
       orderBy: { sortOrder: "asc" },
       take: 8,
-      include: { _count: { select: { products: true } } },
     }),
-    prisma.review.findMany({
+    prisma.product.findMany({
       where: { published: true },
-      orderBy: { sortOrder: "asc" },
-      take: 4,
+      include: { variants: true },
+      take: 40,
+      orderBy: { createdAt: "desc" },
     }),
     prisma.blogPost.findMany({
       where: { published: true },
       orderBy: { createdAt: "desc" },
-      take: 4,
+      take: 5,
     }),
     prisma.productVariant.aggregate({
       where: { price: { gte: 100_000 }, product: { published: true } },
@@ -67,51 +68,56 @@ export default async function HomePage() {
 
   const fromPrice = minPriceAgg._min.price ?? 249_000;
   const fromTag = priceTag(fromPrice);
+  const hot = hotProducts.length ? hotProducts : newProducts;
 
   const slides: HeroSlide[] = [
     {
       src: "/banners/hero-dam-gia-tot.jpg",
       alt: `${brand} — Đầm hiệu giá tốt`,
       href: "/collections/dam",
+      badge: "Đầm hiệu giá tốt",
+      title: "Chốt đơn liền tay",
+      subtitle: "Đầm thiết kế Tisora — form chuẩn, ảnh thật sản phẩm",
+      priceLabel: fromTag,
+      cta: "Mua ngay",
     },
     {
       src: "/banners/hero-du-tiec.jpg",
-      alt: `${brand} — Đầm dự tiệc sang chảnh`,
+      alt: `${brand} — Dự tiệc sang chảnh`,
       href: "/collections/dam",
-      overlay: {
-        eyebrow: "Bộ sưu tập mới",
-        title: "Dự tiệc sang chảnh",
-        subtitle: "Đầm thiết kế Tisora — tôn dáng, nổi bật mọi ánh nhìn",
-        priceLabel: fromTag,
-        cta: "Mua ngay",
-      },
+      badge: "Dự tiệc sang chảnh",
+      title: "Tỏa sáng mọi ánh nhìn",
+      subtitle: "Đầm dự tiệc, dạ hội — chất liệu cao cấp, tôn dáng",
+      priceLabel: fromTag,
+      cta: "Xem bộ sưu tập",
     },
   ];
 
-  const flashProducts = hotProducts.length ? hotProducts : newProducts;
-
   return (
-    <div>
+    <div className="bg-white">
       <HomeHeroBanner slides={slides} />
 
-      {/* Coupons — giữ section voucher web cũ */}
+      {/* Voucher — giữ section cũ */}
       {coupons.length > 0 && (
-        <section className="bg-[#fff8f5] py-8 md:py-10">
+        <section className="border-b border-line bg-[#fff8f3] py-6 md:py-8">
           <div className="container-ega">
             <SectionBar title="Mã giảm giá" href="/collections" moreLabel="Mua sắm" />
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {coupons.map((c) => (
                 <div
                   key={c.id}
-                  className="relative overflow-hidden border border-dashed border-accent bg-white p-4 shadow-sm"
+                  className="flex items-stretch overflow-hidden rounded-lg border border-dashed border-[#e31c23] bg-white"
                 >
-                  <div className="absolute -top-3 -right-3 h-10 w-10 rounded-full bg-accent/10" />
-                  <p className="text-[11px] font-semibold tracking-wider text-accent uppercase">
-                    Nhập mã
-                  </p>
-                  <p className="mt-1 text-xl font-bold text-accent">{c.code}</p>
-                  <p className="mt-2 text-[13px] text-muted">{c.description}</p>
-                  <CopyCouponButton code={c.code} />
+                  <div className="flex w-[88px] shrink-0 flex-col items-center justify-center bg-[#e31c23] px-2 text-center text-white">
+                    <span className="text-[10px] uppercase opacity-90">Mã</span>
+                    <span className="text-[13px] leading-tight font-black break-all">
+                      {c.code}
+                    </span>
+                  </div>
+                  <div className="flex flex-1 flex-col justify-center p-3">
+                    <p className="text-[13px] text-ink">{c.description}</p>
+                    <CopyCouponButton code={c.code} />
+                  </div>
                 </div>
               ))}
             </div>
@@ -120,20 +126,20 @@ export default async function HomePage() {
       )}
 
       {/* Sản phẩm hot */}
-      <section className="container-ega py-10">
+      <section className="container-ega py-8 md:py-10">
         <SectionBar title="Sản phẩm hot" href="/collections/all" />
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-          {(hotProducts.length ? hotProducts : newProducts).map((p) => (
+        <div className="grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-3 lg:grid-cols-5">
+          {hot.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
       </section>
 
       {/* Sản phẩm mới */}
-      <section className="bg-[#fafafa] py-10">
+      <section className="bg-[#faf7f2] py-8 md:py-10">
         <div className="container-ega">
           <SectionBar title="Sản phẩm mới" href="/collections/all" />
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-3 lg:grid-cols-5">
             {newProducts.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
@@ -142,141 +148,112 @@ export default async function HomePage() {
       </section>
 
       {/* Flash sale */}
-      <section id="flash-sale" className="container-ega py-10">
-        <div className="mb-6 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+      <section id="flash-sale" className="container-ega py-8 md:py-10">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="rounded-full bg-[#ee495a] px-5 py-2 text-[14px] font-bold tracking-wide text-white uppercase md:text-[15px]">
-              {flashSale?.title || "Flash sale"}
+            <h2 className="rounded-full bg-[#e31c23] px-5 py-2 text-[13px] font-bold tracking-wide text-white uppercase md:text-[14px]">
+              Flash sale
             </h2>
             {flashSale && <Countdown endsAt={flashSale.endsAt} />}
           </div>
           <Link
             href="/collections/all"
-            className="text-[13px] font-semibold text-[#ee495a] uppercase"
+            className="inline-flex items-center gap-2 rounded-full border border-[#e31c23] bg-white px-4 py-1.5 text-[12px] font-bold text-[#e31c23] uppercase"
           >
-            Xem thêm →
+            Xem thêm ›
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-          {flashProducts.map((p) => (
-            <ProductCard key={`flash-${p.id}`} product={p} />
+        <div className="grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-3 lg:grid-cols-5">
+          {hot.slice(0, 10).map((p) => (
+            <ProductCard key={`fs-${p.id}`} product={p} />
           ))}
         </div>
       </section>
 
-      {/* Danh mục — kiểu Bemine chips/grid */}
-      <section className="bg-[#fff8f5] py-10">
+      {/* Thời trang theo danh mục — tabs kiểu Bemine */}
+      <section className="bg-[#fff8f3] py-8 md:py-10">
         <div className="container-ega">
           <SectionBar title="Thời trang" href="/collections" />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-            {categories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/collections/${cat.slug}`}
-                className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-[#f0ebe3]"
-              >
-                {cat.image ? (
-                  <Image
-                    src={cat.image}
-                    alt={cat.name}
-                    fill
-                    className="object-cover transition duration-500 group-hover:scale-105"
-                    sizes="25vw"
-                  />
-                ) : null}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
-                <div className="absolute right-3 bottom-3 left-3 text-white">
-                  <p className="text-[15px] font-bold">{cat.name}</p>
-                  <p className="text-[12px] text-white/85">
-                    {cat._count.products} sản phẩm
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <HomeCategoryTabs
+            categories={categories.map((c) => ({
+              id: c.id,
+              name: c.name,
+              slug: c.slug,
+              image: c.image,
+            }))}
+            products={categoryProducts.map((p) => ({
+              id: p.id,
+              name: p.name,
+              slug: p.slug,
+              brand: p.brand,
+              images: p.images,
+              categoryId: p.categoryId,
+              variants: p.variants,
+            }))}
+          />
         </div>
       </section>
 
-      {/* Trust — giống Bemine */}
-      <section className="border-y border-line py-10">
-        <div className="container-ega grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Tin tức */}
+      {posts.length > 0 && (
+        <section className="container-ega py-8 md:py-10">
+          <SectionBar title="Tin tức mỗi ngày" href="/tin-tuc" />
+          <p className="mb-5 -mt-2 text-[13px] text-muted">
+            Chìm sâu vào thế giới thời trang và thể hiện phong cách mỗi ngày
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {posts.map((post) => (
+              <Link key={post.id} href={`/tin-tuc/${post.slug}`} className="group">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-[#f3eee6]">
+                  {post.coverImage && (
+                    <Image
+                      src={post.coverImage}
+                      alt={post.title}
+                      fill
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                      sizes="20vw"
+                    />
+                  )}
+                </div>
+                <h3 className="mt-2 line-clamp-2 text-[13px] font-semibold group-hover:text-[#e31c23]">
+                  {post.title}
+                </h3>
+                <p className="mt-1 text-[11px] text-muted">
+                  {new Date(post.createdAt).toLocaleDateString("vi-VN")}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Trust 4 cột kiểu Bemine */}
+      <section className="border-t border-line bg-[#faf7f2] py-10">
+        <div className="container-ega grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ["Thiết kế riêng", "Sản phẩm thật — không ảnh mạng"],
             ["Giao hàng toàn quốc", "Được kiểm tra trước khi nhận"],
             ["Thanh toán khi nhận", "Giao nhanh — uy tín — an toàn"],
             ["Hỗ trợ đổi hàng", "Đổi trả trong vòng 15 ngày"],
-          ].map(([title, desc]) => (
+          ].map(([title, desc], i) => (
             <div key={title} className="text-center">
-              <h3 className="text-[15px] font-bold uppercase">{title}</h3>
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#f07a2a] text-[#f07a2a]">
+                <span className="text-lg font-black">{i + 1}</span>
+              </div>
+              <h3 className="text-[14px] font-bold uppercase">{title}</h3>
               <p className="mt-1 text-[13px] text-muted">{desc}</p>
             </div>
           ))}
         </div>
-        <p className="mt-6 text-center text-[12px] text-muted">
+        <p className="mt-8 text-center text-[13px] text-muted">
           Hotline{" "}
-          <a href={`tel:${hotline}`} className="font-semibold text-accent">
+          <a href={`tel:${hotline}`} className="font-bold text-[#e31c23]">
             {hotline}
-          </a>{" "}
-          · Chỉ từ{" "}
-          <span className="font-semibold text-ink">{formatVnd(fromPrice)}</span>
+          </a>
+          {" · "}
+          Chỉ từ <span className="font-bold text-ink">{formatVnd(fromPrice)}</span>
         </p>
       </section>
-
-      {/* Reviews */}
-      {reviews.length > 0 && (
-        <section className="container-ega py-10">
-          <SectionBar title="Khách hàng nói gì" />
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {reviews.map((r) => (
-              <blockquote key={r.id} className="rounded-xl border border-line bg-white p-4">
-                <p className="text-[13px] leading-6 text-muted">&ldquo;{r.content}&rdquo;</p>
-                <footer className="mt-4 flex items-center gap-3">
-                  {r.avatar && (
-                    <Image
-                      src={r.avatar}
-                      alt={r.name}
-                      width={40}
-                      height={40}
-                      className="rounded-full"
-                    />
-                  )}
-                  <cite className="text-[13px] font-semibold not-italic">{r.name}</cite>
-                </footer>
-              </blockquote>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Blog */}
-      {posts.length > 0 && (
-        <section className="bg-[#fafafa] py-10">
-          <div className="container-ega">
-            <SectionBar title="Tin tức mỗi ngày" href="/tin-tuc" />
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-              {posts.map((post) => (
-                <Link key={post.id} href={`/tin-tuc/${post.slug}`} className="group">
-                  <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-[#f0ebe3]">
-                    {post.coverImage && (
-                      <Image
-                        src={post.coverImage}
-                        alt={post.title}
-                        fill
-                        className="object-cover transition duration-500 group-hover:scale-105"
-                        sizes="25vw"
-                      />
-                    )}
-                  </div>
-                  <h3 className="mt-3 text-[15px] font-semibold group-hover:text-accent">
-                    {post.title}
-                  </h3>
-                  <p className="mt-1 line-clamp-2 text-[13px] text-muted">{post.excerpt}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }

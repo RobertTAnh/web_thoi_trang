@@ -99,11 +99,13 @@ a {
 .product-card:hover .product-actions {
   opacity: 1;
   visibility: visible;
+  transform: translateY(0);
 }
 
 .product-actions {
   opacity: 0;
   visibility: hidden;
+  transform: translateY(8px);
   transition: all 0.25s ease;
 }
 
@@ -111,6 +113,7 @@ a {
   .product-actions {
     opacity: 1;
     visibility: visible;
+    transform: none;
   }
 }
 
