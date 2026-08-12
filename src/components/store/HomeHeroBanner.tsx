@@ -40,8 +40,8 @@ export function HomeHeroBanner({ slides }: Props) {
   return (
     <section className="relative w-full overflow-hidden bg-[#f4ebe0]">
       <div className="relative mx-auto w-full max-w-[1920px]">
-        {/* Khớp ảnh custom 2:1 (2400×1200) */}
-        <div className="relative aspect-[2/1] w-full">
+        {/* Khớp ảnh custom 3:1 (3600×1200) — tỉ lệ Bemine */}
+        <div className="relative aspect-[3/1] w-full">
           {safe.map((s, i) => {
             const active = i === index;
             return (

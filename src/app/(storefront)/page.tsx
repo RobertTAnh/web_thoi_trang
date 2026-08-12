@@ -72,7 +72,7 @@ export default async function HomePage() {
 
   const slides: HeroSlide[] = [
     {
-      src: "/banners/hero-custom.jpg",
+      src: "/banners/hero-custom-v2.jpg",
       alt: `${brand} — Đầm hiệu giá tốt, chỉ từ 199K`,
       href: "/collections/dam",
       bakedInText: true,
