@@ -72,24 +72,10 @@ export default async function HomePage() {
 
   const slides: HeroSlide[] = [
     {
-      src: "/banners/hero-v3-dam.jpg",
-      alt: `${brand} — Đầm hiệu giá tốt`,
+      src: "/banners/hero-custom.jpg",
+      alt: `${brand} — Đầm hiệu giá tốt, chỉ từ 199K`,
       href: "/collections/dam",
-      badge: "Đầm hiệu giá tốt",
-      title: "Chốt đơn liền tay",
-      subtitle: "Đầm thiết kế Tisora — form chuẩn, ảnh thật sản phẩm",
-      priceLabel: fromTag,
-      cta: "Mua ngay",
-    },
-    {
-      src: "/banners/hero-v3-tiec.jpg",
-      alt: `${brand} — Dự tiệc sang chảnh`,
-      href: "/collections/dam",
-      badge: "Dự tiệc sang chảnh",
-      title: "Tỏa sáng mọi ánh nhìn",
-      subtitle: "Đầm dự tiệc, dạ hội — chất liệu cao cấp, tôn dáng",
-      priceLabel: fromTag,
-      cta: "Xem bộ sưu tập",
+      bakedInText: true,
     },
   ];
 
