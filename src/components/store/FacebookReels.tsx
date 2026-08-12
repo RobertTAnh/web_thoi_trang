@@ -2,10 +2,6 @@ import Script from "next/script";
 
 const reels = [
   {
-    id: "1088524837167738",
-    url: "https://www.facebook.com/reel/1088524837167738/",
-  },
-  {
     id: "1023230153680619",
     url: "https://www.facebook.com/reel/1023230153680619/",
   },
@@ -59,6 +55,25 @@ export function FacebookReels() {
             </blockquote>
           </article>
 
+          <article className="w-[min(360px,calc(100vw-32px))] shrink-0 snap-center overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_12px_35px_rgba(63,38,19,0.10)]">
+            <blockquote
+              className="tiktok-embed m-0! w-full! min-w-0! max-w-none! border-0!"
+              cite="https://www.tiktok.com/@tisora.store/video/7642938832530312466"
+              data-video-id="7642938832530312466"
+            >
+              <section className="flex aspect-[9/16] items-center justify-center bg-[#eee7df] px-6 text-center">
+                <a
+                  target="_blank"
+                  rel="noreferrer"
+                  href="https://www.tiktok.com/@tisora.store/video/7642938832530312466"
+                  className="text-sm font-semibold text-accent"
+                >
+                  Xem video của @tisora.store trên TikTok
+                </a>
+              </section>
+            </blockquote>
+          </article>
+
           {reels.map((reel, index) => (
             <article
               key={reel.id}
@@ -86,6 +101,7 @@ export function FacebookReels() {
         </p>
       </div>
       <Script src="https://www.instagram.com/embed.js" strategy="lazyOnload" />
+      <Script src="https://www.tiktok.com/embed.js" strategy="lazyOnload" />
     </section>
   );
 }
