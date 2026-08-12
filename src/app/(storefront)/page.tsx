@@ -72,7 +72,7 @@ export default async function HomePage() {
 
   const slides: HeroSlide[] = [
     {
-      src: "/banners/hero-dam-gia-tot.jpg",
+      src: "/banners/hero-v3-dam.jpg",
       alt: `${brand} — Đầm hiệu giá tốt`,
       href: "/collections/dam",
       badge: "Đầm hiệu giá tốt",
@@ -82,7 +82,7 @@ export default async function HomePage() {
       cta: "Mua ngay",
     },
     {
-      src: "/banners/hero-du-tiec.jpg",
+      src: "/banners/hero-v3-tiec.jpg",
       alt: `${brand} — Dự tiệc sang chảnh`,
       href: "/collections/dam",
       badge: "Dự tiệc sang chảnh",
