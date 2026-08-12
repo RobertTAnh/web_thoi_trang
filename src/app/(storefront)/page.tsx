@@ -7,6 +7,7 @@ import { HomeHeroBanner, type HeroSlide } from "@/components/store/HomeHeroBanne
 import { SectionBar } from "@/components/store/SectionBar";
 import { CopyCouponButton } from "@/components/store/CopyCouponButton";
 import { HomeCategoryTabs } from "@/components/store/HomeCategoryTabs";
+import { FacebookReels } from "@/components/store/FacebookReels";
 import { formatVnd } from "@/lib/utils";
 
 const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "Tisora";
@@ -132,6 +133,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Video mặc thử và phối đồ từ Facebook */}
+      <FacebookReels />
 
       {/* Flash sale */}
       <section id="flash-sale" className="container-ega py-8 md:py-10">
