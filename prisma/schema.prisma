@@ -281,6 +281,18 @@ model Banner {
   createdAt DateTime @default(now())
 }
 
+model InstagramReel {
+  id        String   @id @default(cuid())
+  title     String?
+  url       String   @unique
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, sortOrder])
+}
+
 model ApiKey {
   id         String    @id @default(cuid())
   name       String

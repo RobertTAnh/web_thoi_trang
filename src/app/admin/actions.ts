@@ -413,6 +413,50 @@ export async function deleteCategoryAction(id: string) {
   return { ok: true as const, message: `Đã xóa danh mục “${category.name}”.` };
 }
 
+function normalizeInstagramReelUrl(raw: string) {
+  try {
+    const url = new URL(raw.trim());
+    if (!/(^|\.)instagram\.com$/i.test(url.hostname)) return null;
+    const match = url.pathname.match(/^\/(reel|p)\/([^/]+)/i);
+    if (!match) return null;
+    return `https://www.instagram.com/${match[1].toLowerCase()}/${match[2]}/`;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveInstagramReelAction(formData: FormData) {
+  await ensureAdmin();
+  const id = String(formData.get("id") || "");
+  const url = normalizeInstagramReelUrl(String(formData.get("url") || ""));
+  if (!url) throw new Error("Link Instagram Reel không hợp lệ");
+  const data = {
+    title: String(formData.get("title") || "").trim() || null,
+    url,
+    sortOrder: Number(formData.get("sortOrder") || 0),
+    active: formData.get("active") === "on",
+  };
+  const duplicate = await prisma.instagramReel.findFirst({
+    where: { url, ...(id ? { id: { not: id } } : {}) },
+    select: { id: true },
+  });
+  if (duplicate) throw new Error("Reel này đã có trong danh sách");
+  if (id) await prisma.instagramReel.update({ where: { id }, data });
+  else await prisma.instagramReel.create({ data });
+  revalidatePath("/admin/instagram-reels");
+  revalidatePath("/");
+}
+
+export async function deleteInstagramReelAction(id: string) {
+  await ensureAdmin();
+  const existing = await prisma.instagramReel.findUnique({ where: { id: String(id) }, select: { id: true } });
+  if (!existing) return { ok: false as const, message: "Reel không còn tồn tại." };
+  await prisma.instagramReel.delete({ where: { id: existing.id } });
+  revalidatePath("/admin/instagram-reels");
+  revalidatePath("/");
+  return { ok: true as const, message: "Đã xóa Reel." };
+}
+
 export async function saveBlogAction(formData: FormData) {
   await ensureAdmin();
   const title = String(formData.get("title") || "");

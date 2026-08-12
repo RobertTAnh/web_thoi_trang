@@ -28,6 +28,7 @@ export default async function HomePage() {
     categoryProducts,
     posts,
     minPriceAgg,
+    instagramReels,
   ] = await Promise.all([
     prisma.coupon.findMany({ where: { active: true }, take: 4 }),
     prisma.flashSale.findFirst({
@@ -64,6 +65,11 @@ export default async function HomePage() {
     prisma.productVariant.aggregate({
       where: { price: { gte: 100_000 }, product: { published: true } },
       _min: { price: true },
+    }),
+    prisma.instagramReel.findMany({
+      where: { active: true },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      select: { id: true, url: true },
     }),
   ]);
 
@@ -135,7 +141,7 @@ export default async function HomePage() {
       </section>
 
       {/* Video mặc thử và phối đồ từ Facebook */}
-      <FacebookReels />
+      <FacebookReels reels={instagramReels} />
 
       {/* Flash sale */}
       <section id="flash-sale" className="container-ega py-8 md:py-10">

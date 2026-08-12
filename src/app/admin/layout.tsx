@@ -12,6 +12,7 @@ const links = [
   { href: "/admin/flash-sales", label: "Flash sale" },
   { href: "/admin/categories", label: "Danh mục" },
   { href: "/admin/content", label: "Nội dung" },
+  { href: "/admin/instagram-reels", label: "Instagram Reels" },
   { href: "/admin/api-keys", label: "API Keys" },
   { href: "/admin/settings/sapo", label: "Sapo Sync" },
 ];

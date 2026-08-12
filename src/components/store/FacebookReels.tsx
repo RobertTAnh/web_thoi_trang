@@ -1,25 +1,7 @@
 import Script from "next/script";
 
-const reels = [
-  {
-    id: "1023230153680619",
-    url: "https://www.facebook.com/reel/1023230153680619/",
-  },
-];
-
-function facebookEmbedUrl(url: string) {
-  const params = new URLSearchParams({
-    height: "476",
-    href: url,
-    show_text: "false",
-    width: "267",
-    t: "0",
-  });
-
-  return `https://www.facebook.com/plugins/video.php?${params.toString()}`;
-}
-
-export function FacebookReels() {
+export function FacebookReels({ reels }: { reels: { id: string; url: string }[] }) {
+  if (!reels.length) return null;
   return (
     <section className="overflow-hidden bg-[#fff8f3] py-10 md:py-14">
       <div className="container-ega">
@@ -36,62 +18,15 @@ export function FacebookReels() {
         </div>
 
         <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:grid sm:grid-cols-3 sm:items-start sm:justify-items-center sm:overflow-visible sm:px-0 sm:pb-0 lg:gap-7">
-          <article className="w-[min(360px,calc(100vw-32px))] shrink-0 snap-center overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_12px_35px_rgba(63,38,19,0.10)]">
-            <blockquote
-              className="instagram-media m-0! w-full! min-w-0! max-w-none! border-0! bg-white!"
-              data-instgrm-permalink="https://www.instagram.com/reel/Db5btVlCci9/"
-              data-instgrm-version="14"
-            >
-              <div className="flex aspect-[9/16] items-center justify-center bg-[#eee7df] px-6 text-center">
-                <a
-                  href="https://www.instagram.com/reel/Db5btVlCci9/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm font-semibold text-accent"
-                >
-                  Xem Reel của Tisora trên Instagram
-                </a>
-              </div>
-            </blockquote>
-          </article>
-
-          <article className="w-[min(360px,calc(100vw-32px))] shrink-0 snap-center overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_12px_35px_rgba(63,38,19,0.10)]">
-            <blockquote
-              className="tiktok-embed m-0! w-full! min-w-0! max-w-none! border-0!"
-              cite="https://www.tiktok.com/@tisora.store/video/7642938832530312466"
-              data-video-id="7642938832530312466"
-            >
-              <section className="flex aspect-[9/16] items-center justify-center bg-[#eee7df] px-6 text-center">
-                <a
-                  target="_blank"
-                  rel="noreferrer"
-                  href="https://www.tiktok.com/@tisora.store/video/7642938832530312466"
-                  className="text-sm font-semibold text-accent"
-                >
-                  Xem video của @tisora.store trên TikTok
-                </a>
-              </section>
-            </blockquote>
-          </article>
-
-          {reels.map((reel, index) => (
-            <article
-              key={reel.id}
-              className="w-[267px] shrink-0 snap-center overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_12px_35px_rgba(63,38,19,0.10)]"
-            >
-              <div className="h-[476px] w-[267px] bg-[#eee7df]">
-                <iframe
-                  src={facebookEmbedUrl(reel.url)}
-                  title={`Facebook Reel Tisora ${index + 1}`}
-                  width="267"
-                  height="476"
-                  className="block border-0"
-                  scrolling="no"
-                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                  allowFullScreen
-                  loading="lazy"
-                />
-              </div>
+          {reels.map((reel) => (
+            <article key={reel.id} className="w-[min(360px,calc(100vw-32px))] shrink-0 snap-center overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_12px_35px_rgba(63,38,19,0.10)]">
+              <blockquote className="instagram-media m-0! w-full! min-w-0! max-w-none! border-0! bg-white!" data-instgrm-permalink={reel.url} data-instgrm-version="14">
+                <div className="flex aspect-[9/16] items-center justify-center bg-[#eee7df] px-6 text-center">
+                  <a href={reel.url} target="_blank" rel="noreferrer" className="text-sm font-semibold text-accent">
+                    Xem Reel của Tisora trên Instagram
+                  </a>
+                </div>
+              </blockquote>
             </article>
           ))}
         </div>
@@ -101,7 +36,6 @@ export function FacebookReels() {
         </p>
       </div>
       <Script src="https://www.instagram.com/embed.js" strategy="lazyOnload" />
-      <Script src="https://www.tiktok.com/embed.js" strategy="lazyOnload" />
     </section>
   );
 }
