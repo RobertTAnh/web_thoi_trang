@@ -375,15 +375,42 @@ export async function saveFlashSaleAction(formData: FormData) {
 
 export async function saveCategoryAction(formData: FormData) {
   await ensureAdmin();
+  const id = String(formData.get("id") || "");
   const name = String(formData.get("name") || "");
+  if (!name.trim()) throw new Error("Thiếu tên danh mục");
   const slug = slugify(String(formData.get("slug") || name));
   const image = String(formData.get("image") || "") || null;
-  await prisma.category.upsert({
-    where: { slug },
-    update: { name, image },
-    create: { name, slug, image },
+  const duplicate = await prisma.category.findFirst({
+    where: { slug, ...(id ? { id: { not: id } } : {}) },
+    select: { id: true },
   });
+  if (duplicate) throw new Error("Slug danh mục đã tồn tại");
+
+  if (id) await prisma.category.update({ where: { id }, data: { name, slug, image } });
+  else await prisma.category.create({ data: { name, slug, image } });
   revalidatePath("/admin/categories");
+  revalidatePath("/");
+  revalidatePath("/collections", "layout");
+}
+
+export async function deleteCategoryAction(id: string) {
+  await ensureAdmin();
+  const category = await prisma.category.findUnique({
+    where: { id: String(id) },
+    select: { name: true, _count: { select: { products: true, children: true } } },
+  });
+  if (!category) return { ok: false as const, message: "Danh mục không còn tồn tại." };
+  if (category._count.products > 0 || category._count.children > 0) {
+    return {
+      ok: false as const,
+      message: `Không thể xóa “${category.name}” vì đang có ${category._count.products} sản phẩm hoặc danh mục con.`,
+    };
+  }
+  await prisma.category.delete({ where: { id: String(id) } });
+  revalidatePath("/admin/categories");
+  revalidatePath("/");
+  revalidatePath("/collections", "layout");
+  return { ok: true as const, message: `Đã xóa danh mục “${category.name}”.` };
 }
 
 export async function saveBlogAction(formData: FormData) {
