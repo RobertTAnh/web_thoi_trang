@@ -42,12 +42,16 @@ async function main() {
   });
 
   const categories = [
-    { name: "Đầm", slug: "dam", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&q=80", sortOrder: 1 },
-    { name: "Vest - Blazer", slug: "vest-blazer", image: "https://images.unsplash.com/photo-1591369822096-ffd140ec948f?w=600&q=80", sortOrder: 2 },
-    { name: "Đồ thể thao", slug: "do-the-thao", image: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=600&q=80", sortOrder: 3 },
-    { name: "Đồ bơi", slug: "do-boi", image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=600&q=80", sortOrder: 4 },
-    { name: "Đồ ngủ", slug: "do-ngu", image: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80", sortOrder: 5 },
-    { name: "Áo sơ mi", slug: "ao-so-mi", image: "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=600&q=80", sortOrder: 6 },
+    { name: "Đầm", slug: "dam", image: "/categories/dam.jpg", sortOrder: 1 },
+    { name: "Vest - Blazer", slug: "vest-blazer", image: "/categories/vest-blazer.jpg", sortOrder: 2 },
+    { name: "Đồ thể thao", slug: "do-the-thao", image: "/categories/do-the-thao.jpg", sortOrder: 3 },
+    { name: "Đồ bơi", slug: "do-boi", image: "/categories/do-boi.jpg", sortOrder: 4 },
+    { name: "Đồ ngủ", slug: "do-ngu", image: "/categories/do-ngu.jpg", sortOrder: 5 },
+    { name: "Áo sơ mi", slug: "ao-so-mi", image: "/categories/ao-so-mi.jpg", sortOrder: 6 },
+    { name: "Sét Áo Quần", slug: "set-ao-quan", image: "/categories/set-ao-quan.jpg", sortOrder: 7 },
+    { name: "Quần", slug: "quan", image: "/categories/quan.jpg", sortOrder: 8 },
+    { name: "Phụ Kiện", slug: "phu-kien", image: "/categories/phu-kien.jpg", sortOrder: 9 },
+    { name: "Sét Áo Dài", slug: "set-ao-dai", image: "/categories/set-ao-dai.jpg", sortOrder: 10 },
   ];
 
   for (const cat of categories) {
@@ -57,14 +61,6 @@ async function main() {
       create: cat,
     });
   }
-
-  // Dọn URL ảnh Unsplash hỏng còn sót từ seed cũ
-  await prisma.category.updateMany({
-    where: { image: { contains: "photo-1617331721458" } },
-    data: {
-      image: "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80",
-    },
-  });
 
 
   const dam = await prisma.category.findUniqueOrThrow({ where: { slug: "dam" } });
@@ -340,7 +336,7 @@ async function main() {
       excerpt: "Thời tiết nóng bức đòi hỏi chúng ta cập nhật tủ quần áo với những thiết kế và chất liệu mới.",
       content:
         "Mùa hè là lúc linen, croptop và váy maxi lên ngôi. Hãy ưu tiên chất liệu thoáng mát và màu sắc tươi sáng.",
-      coverImage: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80",
+      coverImage: "/blog/xu-huong-he.jpg",
     },
     {
       title: "Bí kíp mix & match outfit mùa hè chuẩn streetstyle",
@@ -348,21 +344,21 @@ async function main() {
       excerpt: "Những công thức phối đồ đơn giản giúp bạn nổi bật mỗi ngày.",
       content:
         "Công thức cơ bản: áo oversize + chân váy ngắn, hoặc sơ mi linen + quần ống rộng.",
-      coverImage: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=800&q=80",
+      coverImage: "/blog/mix-match.jpg",
     },
     {
       title: "Nghệ thuật tiết kiệm từ những tín đồ sống tối giản",
       slug: "nghe-thuat-tiet-kiem-toi-gian",
       excerpt: "Mẹo quản lý tài chính chặt chẽ nhưng vẫn cảm thấy cuộc sống nhẹ nhàng.",
       content: "Mua ít nhưng chọn kỹ, ưu tiên chất liệu bền và form dáng linh hoạt.",
-      coverImage: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&q=80",
+      coverImage: "/blog/toi-gian.jpg",
     },
     {
       title: "Xu hướng đầm dự tiệc mùa hè",
       slug: "xu-huong-dam-du-tiec-mua-he",
       excerpt: "Những thiết kế xẻ cao, voan tầng đang được ưa chuộng.",
       content: "Đầm voan tầng và cut-out là điểm nhấn cho mọi buổi tiệc.",
-      coverImage: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=800&q=80",
+      coverImage: "/blog/dam-du-tiec.jpg",
     },
   ];
 

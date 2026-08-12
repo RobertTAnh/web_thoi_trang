@@ -231,14 +231,20 @@ export default async function HomePage() {
       <section className="border-t border-line bg-[#faf7f2] py-10">
         <div className="container-ega grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            ["Thiết kế riêng", "Sản phẩm thật — không ảnh mạng"],
-            ["Giao hàng toàn quốc", "Được kiểm tra trước khi nhận"],
-            ["Thanh toán khi nhận", "Giao nhanh — uy tín — an toàn"],
-            ["Hỗ trợ đổi hàng", "Đổi trả trong vòng 15 ngày"],
-          ].map(([title, desc], i) => (
+            ["/trust/thiet-ke.jpg", "Thiết kế riêng", "Sản phẩm thật — không ảnh mạng"],
+            ["/trust/giao-hang.jpg", "Giao hàng toàn quốc", "Được kiểm tra trước khi nhận"],
+            ["/trust/thanh-toan.jpg", "Thanh toán khi nhận", "Giao nhanh — uy tín — an toàn"],
+            ["/trust/doi-tra.jpg", "Hỗ trợ đổi hàng", "Đổi trả trong vòng 15 ngày"],
+          ].map(([img, title, desc]) => (
             <div key={title} className="text-center">
-              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full border-2 border-[#f07a2a] text-[#f07a2a]">
-                <span className="text-lg font-black">{i + 1}</span>
+              <div className="relative mx-auto mb-3 aspect-square w-[120px] overflow-hidden rounded-full border-2 border-[#f07a2a]/40 bg-[#f3eee6] md:w-[140px]">
+                <Image
+                  src={img}
+                  alt={title}
+                  fill
+                  className="object-cover"
+                  sizes="140px"
+                />
               </div>
               <h3 className="text-[14px] font-bold uppercase">{title}</h3>
               <p className="mt-1 text-[13px] text-muted">{desc}</p>
