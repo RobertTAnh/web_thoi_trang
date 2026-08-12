@@ -13,10 +13,11 @@ const reels = [
 
 function facebookEmbedUrl(url: string) {
   const params = new URLSearchParams({
-    height: "642",
+    // Request a larger player, then downsample it in CSS for a sharper embed.
+    height: "963",
     href: url,
     show_text: "false",
-    width: "360",
+    width: "540",
     t: "0",
   });
 
@@ -64,13 +65,13 @@ export function FacebookReels() {
               key={reel.id}
               className="w-[min(360px,calc(100vw-32px))] shrink-0 snap-center overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_12px_35px_rgba(63,38,19,0.10)]"
             >
-              <div className="aspect-[9/16] w-full bg-[#eee7df]">
+              <div className="aspect-[9/16] w-full overflow-hidden bg-[#eee7df]">
                 <iframe
                   src={facebookEmbedUrl(reel.url)}
                   title={`Facebook Reel Tisora ${index + 1}`}
-                  width="360"
-                  height="642"
-                  className="block h-full w-full border-0"
+                  width="540"
+                  height="963"
+                  className="block h-[150%] w-[150%] origin-top-left scale-[0.666667] border-0"
                   scrolling="no"
                   allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                   allowFullScreen
