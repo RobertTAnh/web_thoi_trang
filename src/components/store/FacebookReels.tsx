@@ -1,6 +1,8 @@
-import Script from "next/script";
-
 const reels = [
+  {
+    id: "27002010879455289",
+    url: "https://www.facebook.com/reel/27002010879455289/",
+  },
   {
     id: "1088524837167738",
     url: "https://www.facebook.com/reel/1088524837167738/",
@@ -30,7 +32,7 @@ export function FacebookReels() {
       <div className="container-ega">
         <div className="mx-auto mb-7 max-w-2xl text-center md:mb-9">
           <p className="mb-2 text-[11px] font-bold tracking-[0.28em] text-[#e31c23] uppercase">
-            Tisora trên mạng xã hội
+            Tisora on Facebook
           </p>
           <h2 className="text-2xl font-black tracking-tight text-ink md:text-3xl">
             Mặc đẹp cùng Tisora
@@ -41,25 +43,6 @@ export function FacebookReels() {
         </div>
 
         <div className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 sm:mx-0 sm:grid sm:grid-cols-3 sm:items-start sm:justify-items-center sm:overflow-visible sm:px-0 sm:pb-0 lg:gap-7">
-          <article className="w-[min(360px,calc(100vw-32px))] shrink-0 snap-center overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_12px_35px_rgba(63,38,19,0.10)]">
-            <blockquote
-              className="instagram-media m-0! w-full! min-w-0! max-w-none! border-0! bg-white!"
-              data-instgrm-permalink="https://www.instagram.com/reel/Db5btVlCci9/"
-              data-instgrm-version="14"
-            >
-              <div className="flex aspect-[9/16] items-center justify-center bg-[#eee7df] px-6 text-center">
-                <a
-                  href="https://www.instagram.com/reel/Db5btVlCci9/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm font-semibold text-accent"
-                >
-                  Xem Reel của Tisora trên Instagram
-                </a>
-              </div>
-            </blockquote>
-          </article>
-
           {reels.map((reel, index) => (
             <article
               key={reel.id}
@@ -86,7 +69,6 @@ export function FacebookReels() {
           Vuốt ngang để xem thêm
         </p>
       </div>
-      <Script src="https://www.instagram.com/embed.js" strategy="lazyOnload" />
     </section>
   );
 }
