@@ -59,7 +59,8 @@ export function HomeHeroBanner({ slides }: Props) {
                   alt={s.alt}
                   fill
                   priority={i === 0}
-                  quality={95}
+                  quality={100}
+                  unoptimized
                   className="object-cover object-center"
                   sizes="100vw"
                 />
