@@ -57,7 +57,8 @@ export async function saveProductAction(formData: FormData) {
   const id = String(formData.get("id") || "");
   const name = String(formData.get("name") || "");
   const brand = String(formData.get("brand") || "") || null;
-  const description = String(formData.get("description") || "") || null;
+  const { productDescriptionToText } = await import("@/lib/html");
+  const description = productDescriptionToText(String(formData.get("description") || ""));
   const categoryId = String(formData.get("categoryId") || "") || null;
   const published = formData.get("published") === "on";
   const featured = formData.get("featured") === "on";

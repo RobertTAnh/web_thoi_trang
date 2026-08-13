@@ -13,40 +13,45 @@ export function sanitizeHtml(input: string) {
     .replace(/javascript:/gi, "");
 }
 
+/** Convert imported product HTML into readable plain text. */
+export function productDescriptionToText(input: string | null | undefined): string | null {
+  if (!input) return null;
+  const decodedInput = input
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'");
+
+  const text = sanitizeHtml(decodedInput)
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<img\b[^>]*>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p\s*>/gi, "\n\n")
+    .replace(/<\/div\s*>/gi, "\n")
+    .replace(/<li\b[^>]*>/gi, "• ")
+    .replace(/<\/li\s*>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n[ \t]+/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+
+  return text || null;
+}
+
 /**
  * Normalize Sapo/Excel HTML for nicer storefront display.
  * Safe to run in batch on DB rows.
  */
 export function beautifyProductHtml(input: string | null | undefined): string | null {
-  if (!input) return null;
-  let html = input.trim();
-  if (!html) return null;
-
-  // Double-escaped from some exports: &lt;p&gt;...
-  if (/&lt;[a-z]/i.test(html) && !/<[a-z]/i.test(html)) {
-    html = html
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'");
-  }
-
-  html = sanitizeHtml(html)
-    // collapse empty paragraphs / nbsp-only blocks
-    .replace(/<p>(?:\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, "")
-    // normalize breaks
-    .replace(/(?:<br\s*\/?>\s*){3,}/gi, "<br /><br />")
-    // tidy spaces around nbsp
-    .replace(/(?:&nbsp;){2,}/g, "&nbsp;")
-    .trim();
-
-  // Plain text → wrap paragraphs
-  if (!looksLikeHtml(html)) {
-    html = html
-      .split(/\n{2,}/)
-      .map((block) => `<p>${block.replace(/\n/g, "<br />")}</p>`)
-      .join("");
-  }
-
-  return html || null;
+  return productDescriptionToText(input);
 }
