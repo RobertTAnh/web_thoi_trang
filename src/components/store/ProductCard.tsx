@@ -168,9 +168,14 @@ export function ProductCard({ product, showFlashProgress = false }: ProductCardP
             <div className="rounded-md border border-[#f3d8d8] bg-white px-2.5 py-2 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
               <div className="mb-1.5 flex min-h-5 items-center gap-1.5 text-[11px] font-medium text-[#444] sm:text-[12px]">
                 {flashProgress >= 78 && totalStock > 0 && (
-                  <span className="text-[17px] leading-none" aria-hidden>
-                    🔥
-                  </span>
+                  <Image
+                    src="/fire-icon.svg"
+                    alt=""
+                    width={22}
+                    height={25}
+                    className="h-[22px] w-auto shrink-0"
+                    aria-hidden
+                  />
                 )}
                 <span>{flashLabel}</span>
               </div>
