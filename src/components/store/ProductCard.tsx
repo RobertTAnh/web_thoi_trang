@@ -118,8 +118,20 @@ export function ProductCard({ product }: ProductCardProps) {
                         unoptimized={option.image.startsWith("/api/media/")}
                       />
                     </span>
-                    <span className="pointer-events-none absolute bottom-[calc(100%+7px)] left-1/2 z-20 hidden -translate-x-1/2 whitespace-nowrap rounded bg-white px-2 py-1 text-[11px] text-[#444] shadow-md ring-1 ring-black/10 group-hover/swatch:block">
-                      {option.color}
+                    <span className="pointer-events-none absolute bottom-[calc(100%+8px)] left-1/2 z-30 hidden w-28 -translate-x-1/2 overflow-hidden rounded-md bg-white shadow-xl ring-1 ring-black/10 group-hover/swatch:block md:w-32">
+                      <span className="relative block aspect-[3/4] w-full bg-[#f5f5f5]">
+                        <Image
+                          src={option.image}
+                          alt={`Xem trước màu ${option.color}`}
+                          fill
+                          className="object-cover object-top"
+                          sizes="128px"
+                          unoptimized={option.image.startsWith("/api/media/")}
+                        />
+                      </span>
+                      <span className="block bg-[#f15a24] px-2 py-1.5 text-center text-[11px] font-semibold text-white">
+                        {option.color}
+                      </span>
                     </span>
                   </div>
                 ))}
