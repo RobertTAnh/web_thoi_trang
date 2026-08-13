@@ -318,6 +318,22 @@ export async function uploadProductImagesAction(formData: FormData) {
   }
 }
 
+export async function deleteMediaAssetAction(formData: FormData) {
+  await ensureAdmin();
+  const id = String(formData.get("id") || "");
+  if (!id) return;
+  const path = `/api/media/${id}`;
+  const [galleryUse, variantUse] = await Promise.all([
+    prisma.product.count({ where: { images: { has: path } } }),
+    prisma.productVariant.count({ where: { image: path } }),
+  ]);
+  if (galleryUse || variantUse) {
+    throw new Error("Ảnh đang được sản phẩm sử dụng nên chưa thể xóa.");
+  }
+  await prisma.mediaAsset.delete({ where: { id } });
+  revalidatePath("/admin/media");
+}
+
 export async function saveCouponAction(formData: FormData) {
   await ensureAdmin();
   const code = String(formData.get("code") || "").toUpperCase().trim();

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 const links = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/products", label: "Sản phẩm" },
+  { href: "/admin/media", label: "Thư viện Media" },
   { href: "/admin/orders", label: "Đơn hàng" },
   { href: "/admin/customers", label: "Khách hàng" },
   { href: "/admin/crm", label: "CRM / Lợi nhuận" },

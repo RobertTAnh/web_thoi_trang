@@ -91,6 +91,12 @@ export function ProductForm({
   const [imageMsg, setImageMsg] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState("basic");
   const [isUploading, startImageUpload] = useTransition();
+  const [colors, setColors] = useState<string[]>(() => [
+    ...new Set((product?.variants || []).map((variant) => variant.color?.trim()).filter(Boolean)),
+  ] as string[]);
+  const [sizes, setSizes] = useState<string[]>(() => [
+    ...new Set((product?.variants || []).map((variant) => variant.size?.trim()).filter(Boolean)),
+  ] as string[]);
 
   const galleryPreview = useMemo(
     () =>
@@ -100,15 +106,6 @@ export function ProductForm({
         .filter(Boolean),
     [imagesText],
   );
-  const colors = useMemo(
-    () => [...new Set(variants.map((variant) => variant.color?.trim()).filter(Boolean))] as string[],
-    [variants],
-  );
-  const sizes = useMemo(
-    () => [...new Set(variants.map((variant) => variant.size?.trim()).filter(Boolean))] as string[],
-    [variants],
-  );
-
   function updateVariant(index: number, patch: Partial<VariantFormRow>) {
     setVariants((prev) => prev.map((v, i) => (i === index ? { ...v, ...patch } : v)));
   }
@@ -134,6 +131,73 @@ export function ProductForm({
         next[replaceIndex] = result.urls[0];
         setGallery(next);
       }
+    });
+  }
+
+  function syncVariants(nextColors: string[], nextSizes: string[]) {
+    const colorValues = nextColors.filter(Boolean);
+    const sizeValues = nextSizes.filter(Boolean);
+    const matrixColors = colorValues.length ? colorValues : [""];
+    const matrixSizes = sizeValues.length ? sizeValues : [""];
+
+    setVariants((current) =>
+      matrixColors.flatMap((color) =>
+        matrixSizes.map((size) => {
+          const existing = current.find(
+            (variant) => (variant.color || "") === color && (variant.size || "") === size,
+          );
+          return existing || { ...emptyVariant(), color, size };
+        }),
+      ),
+    );
+  }
+
+  function renameOption(type: "color" | "size", index: number, value: string) {
+    const source = type === "color" ? colors : sizes;
+    const previous = source[index];
+    const next = source.map((item, itemIndex) => itemIndex === index ? value : item);
+    if (type === "color") setColors(next);
+    else setSizes(next);
+    setVariants((current) => current.map((variant) =>
+      (type === "color" ? variant.color : variant.size) === previous
+        ? { ...variant, [type]: value }
+        : variant,
+    ));
+  }
+
+  function addOption(type: "color" | "size") {
+    const source = type === "color" ? colors : sizes;
+    const next = [...source, ""];
+    if (type === "color") setColors(next);
+    else setSizes(next);
+  }
+
+  function removeOption(type: "color" | "size", index: number) {
+    const source = type === "color" ? colors : sizes;
+    const next = source.filter((_, itemIndex) => itemIndex !== index);
+    if (type === "color") {
+      setColors(next);
+      syncVariants(next, sizes);
+    } else {
+      setSizes(next);
+      syncVariants(colors, next);
+    }
+  }
+
+  function uploadColorImage(color: string, files: File[]) {
+    if (!color || !files.length) return;
+    setImageMsg(null);
+    startImageUpload(async () => {
+      const data = new FormData();
+      data.append("images", files[0]);
+      const result = await uploadProductImagesAction(data);
+      setImageMsg(result.message);
+      if (!result.ok) return;
+      const image = result.urls[0];
+      setVariants((current) => current.map((variant) =>
+        variant.color === color ? { ...variant, image } : variant,
+      ));
+      if (!galleryPreview.includes(image)) setGallery([...galleryPreview, image]);
     });
   }
 
@@ -325,14 +389,36 @@ export function ProductForm({
         <h2 className="mb-6 text-2xl font-bold">Thông tin bán hàng</h2>
         <div className="mb-5 rounded-md bg-[#f7f7f7] p-5">
           <h3 className="mb-4 font-bold"><span className="text-[#ee4d2d]">●</span> Phân loại hàng</h3>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-4">
             <div className="rounded border border-line bg-white p-4">
-              <p className="mb-2 font-medium">Phân loại 1 · Màu sắc</p>
-              <div className="flex flex-wrap gap-2">{colors.map((color) => <span key={color} className="rounded border border-line px-3 py-2">{color}</span>)}</div>
+              <label className="mb-3 block max-w-sm"><span className="mb-1 block font-medium">Phân loại 1</span><input value="Màu sắc" readOnly className="w-full rounded border border-line bg-white px-3 py-2" /></label>
+              <p className="mb-2 font-medium">Tùy chọn <span className="text-[#ee4d2d]">●</span></p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {colors.map((color, index) => (
+                  <div key={`color-${index}`} className="flex min-w-0">
+                    <input value={color} onChange={(event) => renameOption("color", index, event.target.value)} onBlur={() => syncVariants(colors, sizes)} placeholder="Nhập màu" className="min-w-0 flex-1 rounded-l border border-line px-3 py-2" />
+                    <label className="cursor-pointer border-y border-line px-3 py-2 text-[#ee4d2d] hover:bg-[#fff2ef]">
+                      Ảnh
+                      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={(event) => { uploadColorImage(color, Array.from(event.target.files || [])); event.target.value = ""; }} />
+                    </label>
+                    <button type="button" onClick={() => removeOption("color", index)} className="rounded-r border border-line px-3 text-sale">×</button>
+                  </div>
+                ))}
+              </div>
+              <button type="button" onClick={() => addOption("color")} className="mt-3 font-medium text-[#ee4d2d]">+ Thêm màu</button>
             </div>
             <div className="rounded border border-line bg-white p-4">
-              <p className="mb-2 font-medium">Phân loại 2 · Kích thước</p>
-              <div className="flex flex-wrap gap-2">{sizes.map((size) => <span key={size} className="rounded border border-line px-3 py-2">{size}</span>)}</div>
+              <label className="mb-3 block max-w-sm"><span className="mb-1 block font-medium">Phân loại 2</span><input value="Kích thước" readOnly className="w-full rounded border border-line bg-white px-3 py-2" /></label>
+              <p className="mb-2 font-medium">Tùy chọn <span className="text-[#ee4d2d]">●</span></p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {sizes.map((size, index) => (
+                  <div key={`size-${index}`} className="flex min-w-0">
+                    <input value={size} onChange={(event) => renameOption("size", index, event.target.value)} onBlur={() => syncVariants(colors, sizes)} placeholder="Nhập kích thước" className="min-w-0 flex-1 rounded-l border border-line px-3 py-2" />
+                    <button type="button" onClick={() => removeOption("size", index)} className="rounded-r border border-line px-3 text-sale">×</button>
+                  </div>
+                ))}
+              </div>
+              <button type="button" onClick={() => addOption("size")} className="mt-3 font-medium text-[#ee4d2d]">+ Thêm kích thước</button>
             </div>
           </div>
         </div>
@@ -410,7 +496,7 @@ export function ProductForm({
         </div>
       </div>
 
-      <div className="mt-5 space-y-3 overflow-x-auto rounded border border-line p-4">
+      <div className="mt-5 space-y-3 overflow-x-auto rounded border border-line p-4 [scrollbar-color:#ee4d2d_#eee] [scrollbar-width:thin]">
         <div className="flex items-center justify-between">
           <h3 className="font-medium">Biến thể</h3>
           <button
@@ -427,12 +513,19 @@ export function ProductForm({
         {variants.map((v, index) => (
           <div key={v.id || index} className="min-w-[720px] space-y-3 border-t border-line pt-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-muted">
-                #{index + 1}
-                {v.color || v.size
-                  ? ` · ${[v.color, v.size].filter(Boolean).join(" / ")}`
-                  : ""}
-              </p>
+              <div className="flex items-center gap-3">
+                <label className="relative flex size-14 cursor-pointer items-center justify-center overflow-hidden rounded border border-line bg-[#fafafa] text-center text-[10px] text-muted hover:border-[#ee4d2d]">
+                  {v.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={v.image} alt="" className="h-full w-full object-cover" />
+                  ) : "Tải ảnh"}
+                  <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={(event) => { uploadColorImage(v.color || "", Array.from(event.target.files || [])); event.target.value = ""; }} />
+                </label>
+                <p className="text-xs font-medium text-muted">
+                  #{index + 1}
+                  {v.color || v.size ? ` · ${[v.color, v.size].filter(Boolean).join(" / ")}` : ""}
+                </p>
+              </div>
               {variants.length > 1 && (
                 <button
                   type="button"
