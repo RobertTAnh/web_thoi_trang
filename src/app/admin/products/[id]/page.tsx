@@ -29,7 +29,7 @@ export default async function EditProductPage({
           </button>
         </form>
       </div>
-      <div className="mt-6 max-w-3xl border border-line bg-white p-6">
+      <div className="mt-6 max-w-6xl">
         <ProductForm
           categories={categories}
           product={{

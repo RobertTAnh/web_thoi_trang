@@ -89,6 +89,7 @@ export function ProductForm({
   );
   const [bulkMsg, setBulkMsg] = useState<string | null>(null);
   const [imageMsg, setImageMsg] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState("basic");
   const [isUploading, startImageUpload] = useTransition();
 
   const galleryPreview = useMemo(
@@ -98,6 +99,14 @@ export function ProductForm({
         .map((s) => s.trim())
         .filter(Boolean),
     [imagesText],
+  );
+  const colors = useMemo(
+    () => [...new Set(variants.map((variant) => variant.color?.trim()).filter(Boolean))] as string[],
+    [variants],
+  );
+  const sizes = useMemo(
+    () => [...new Set(variants.map((variant) => variant.size?.trim()).filter(Boolean))] as string[],
+    [variants],
   );
 
   function updateVariant(index: number, patch: Partial<VariantFormRow>) {
@@ -146,48 +155,38 @@ export function ProductForm({
   }
 
   return (
-    <form action={saveProductAction} className="space-y-4 text-sm">
+    <form action={saveProductAction} className="product-editor pb-24 text-sm">
       {product?.id && <input type="hidden" name="id" value={product.id} />}
       <input type="hidden" name="variantsJson" value={JSON.stringify(variants)} />
       <input type="hidden" name="imagesJson" value={JSON.stringify(galleryPreview)} />
 
-      <input
-        name="name"
-        required
-        defaultValue={product?.name || ""}
-        placeholder="Tên sản phẩm"
-        className="w-full border border-line px-3 py-2"
-      />
-      <input
-        name="brand"
-        defaultValue={product?.brand || ""}
-        placeholder="Thương hiệu"
-        className="w-full border border-line px-3 py-2"
-      />
-      <textarea
-        name="description"
-        defaultValue={product?.description || ""}
-        placeholder="Mô tả"
-        rows={4}
-        className="w-full border border-line px-3 py-2"
-      />
-      <select
-        name="categoryId"
-        defaultValue={product?.categoryId || ""}
-        className="w-full border border-line px-3 py-2"
-      >
-        <option value="">— Danh mục —</option>
-        {categories.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-          </option>
+      <nav className="sticky top-0 z-30 mb-5 flex overflow-x-auto rounded-lg border border-line bg-white shadow-sm">
+        {[
+          ["basic", "Thông tin cơ bản"],
+          ["details", "Thông tin chi tiết"],
+          ["description", "Mô tả"],
+          ["sales", "Thông tin bán hàng"],
+          ["shipping", "Vận chuyển"],
+          ["other", "Thông tin khác"],
+        ].map(([id, label]) => (
+          <a
+            key={id}
+            href={`#${id}`}
+            onClick={() => setActiveSection(id)}
+            className={`shrink-0 border-b-4 px-5 py-4 font-medium ${activeSection === id ? "border-[#ee4d2d] text-[#ee4d2d]" : "border-transparent hover:text-[#ee4d2d]"}`}
+          >
+            {label}
+          </a>
         ))}
-      </select>
+      </nav>
+
+      <section id="basic" className="scroll-mt-24 rounded-lg border border-line bg-white p-5 shadow-sm md:p-7">
+        <h2 className="mb-6 text-2xl font-bold">Thông tin cơ bản</h2>
 
       <div>
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <div>
-            <p className="font-medium">Ảnh sản phẩm</p>
+            <p className="font-bold">Hình ảnh sản phẩm</p>
             <p className="text-xs text-muted">
               Ảnh đầu tiên là ảnh đại diện. Tối đa 10 MB mỗi ảnh, 18 MB mỗi lần tải.
             </p>
@@ -209,15 +208,15 @@ export function ProductForm({
         </div>
 
         {galleryPreview.length > 0 ? (
-          <div className="mb-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="mb-4 flex flex-wrap gap-3">
             {galleryPreview.map((image, index) => (
-              <div key={`${image}-${index}`} className="overflow-hidden border border-line bg-white">
-                <div className="relative aspect-[3/4] bg-[#f5f2ee]">
+              <div key={`${image}-${index}`} className="w-[92px] overflow-hidden rounded border border-line bg-white">
+                <div className="relative aspect-square bg-[#f5f2ee]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={image} alt={`Ảnh sản phẩm ${index + 1}`} className="h-full w-full object-cover" />
                   {index === 0 && (
                     <span className="absolute top-2 left-2 bg-ink/80 px-2 py-1 text-[10px] font-semibold text-white">
-                      Ảnh đại diện
+                      * Ảnh bìa
                     </span>
                   )}
                 </div>
@@ -284,7 +283,61 @@ export function ProductForm({
         />
       </div>
 
-      <div className="space-y-3 border-2 border-accent/40 bg-accent-soft/30 p-4">
+        <label className="mt-6 block space-y-2 font-bold">
+          <span><span className="text-[#ee4d2d]">*</span> Tên sản phẩm</span>
+          <input
+            name="name"
+            required
+            maxLength={120}
+            defaultValue={product?.name || ""}
+            placeholder="Tên sản phẩm"
+            className="w-full rounded border border-line px-4 py-3 font-normal"
+          />
+        </label>
+      </section>
+
+      <section id="details" className="mt-5 scroll-mt-24 rounded-lg border border-line bg-white p-5 shadow-sm md:p-7">
+        <h2 className="mb-6 text-2xl font-bold">Thông tin chi tiết</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <label className="space-y-2 font-bold">
+            <span>Thương hiệu</span>
+            <input name="brand" defaultValue={product?.brand || ""} placeholder="Thương hiệu" className="w-full rounded border border-line px-3 py-2.5 font-normal" />
+          </label>
+          <label className="space-y-2 font-bold">
+            <span>Danh mục</span>
+            <select name="categoryId" defaultValue={product?.categoryId || ""} className="w-full rounded border border-line px-3 py-2.5 font-normal">
+              <option value="">— Danh mục —</option>
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section id="description" className="mt-5 scroll-mt-24 rounded-lg border border-line bg-white p-5 shadow-sm md:p-7">
+        <h2 className="mb-6 text-2xl font-bold">Mô tả</h2>
+        <label className="space-y-2 font-bold">
+          <span><span className="text-[#ee4d2d]">*</span> Mô tả sản phẩm</span>
+          <textarea name="description" defaultValue={product?.description || ""} placeholder="Nhập mô tả sản phẩm" rows={12} className="w-full rounded border border-line px-4 py-3 font-normal leading-6" />
+        </label>
+      </section>
+
+      <section id="sales" className="mt-5 scroll-mt-24 rounded-lg border border-line bg-white p-5 shadow-sm md:p-7">
+        <h2 className="mb-6 text-2xl font-bold">Thông tin bán hàng</h2>
+        <div className="mb-5 rounded-md bg-[#f7f7f7] p-5">
+          <h3 className="mb-4 font-bold"><span className="text-[#ee4d2d]">●</span> Phân loại hàng</h3>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded border border-line bg-white p-4">
+              <p className="mb-2 font-medium">Phân loại 1 · Màu sắc</p>
+              <div className="flex flex-wrap gap-2">{colors.map((color) => <span key={color} className="rounded border border-line px-3 py-2">{color}</span>)}</div>
+            </div>
+            <div className="rounded border border-line bg-white p-4">
+              <p className="mb-2 font-medium">Phân loại 2 · Kích thước</p>
+              <div className="flex flex-wrap gap-2">{sizes.map((size) => <span key={size} className="rounded border border-line px-3 py-2">{size}</span>)}</div>
+            </div>
+          </div>
+        </div>
+
+      <div className="space-y-3 rounded border border-[#f4a394] bg-[#fff7f5] p-4">
         <div>
           <h3 className="font-medium">Giá &amp; tồn — áp dụng tất cả biến thể</h3>
           <p className="mt-1 text-xs text-muted">
@@ -357,7 +410,7 @@ export function ProductForm({
         </div>
       </div>
 
-      <div className="space-y-3 border border-line p-3">
+      <div className="mt-5 space-y-3 overflow-x-auto rounded border border-line p-4">
         <div className="flex items-center justify-between">
           <h3 className="font-medium">Biến thể</h3>
           <button
@@ -372,7 +425,7 @@ export function ProductForm({
           Mỗi khối = 1 biến thể (màu + size). Sửa lệch sau khi áp dụng khối chính.
         </p>
         {variants.map((v, index) => (
-          <div key={v.id || index} className="space-y-3 border-t border-line pt-3">
+          <div key={v.id || index} className="min-w-[720px] space-y-3 border-t border-line pt-3">
             <div className="flex items-center justify-between">
               <p className="text-xs font-medium text-muted">
                 #{index + 1}
@@ -490,6 +543,26 @@ export function ProductForm({
         ))}
       </div>
 
+        <div className="mt-6 rounded border border-line p-4">
+          <h3 className="font-bold"><span className="text-[#ee4d2d]">*</span> Bảng quy đổi kích cỡ</h3>
+          <p className="mt-2 text-xs text-muted">Bảng tham khảo nhanh theo kích thước sản phẩm hiện có.</p>
+          <div className="mt-4 overflow-hidden rounded border border-line">
+            <div className="grid grid-cols-3 bg-[#f7f7f7] px-4 py-3 font-medium"><span>Size</span><span>Vòng ngực (cm)</span><span>Eo (cm)</span></div>
+            {(sizes.length ? sizes : ["S", "M"]).map((size, index) => (
+              <div key={size} className="grid grid-cols-3 border-t border-line px-4 py-3"><span>{size}</span><span>{86 + index * 7}</span><span>{68 + index * 7}</span></div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="shipping" className="mt-5 scroll-mt-24 rounded-lg border border-line bg-white p-5 shadow-sm md:p-7">
+        <h2 className="text-2xl font-bold">Vận chuyển</h2>
+        <p className="mt-2 text-muted">Sản phẩm áp dụng cấu hình vận chuyển mặc định của cửa hàng.</p>
+      </section>
+
+      <section id="other" className="mt-5 scroll-mt-24 rounded-lg border border-line bg-white p-5 shadow-sm md:p-7">
+        <h2 className="mb-5 text-2xl font-bold">Thông tin khác</h2>
+
       <label className="flex items-center gap-2">
         <input name="published" type="checkbox" defaultChecked={product?.published ?? true} />
         Hiển thị
@@ -501,9 +574,16 @@ export function ProductForm({
       {product?.sapoProductId && (
         <p className="text-xs text-muted">Sapo ID: {product.sapoProductId}</p>
       )}
-      <button type="submit" className="bg-ink px-5 py-2 text-white">
-        Lưu
-      </button>
+      </section>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 px-5 py-4 shadow-[0_-4px_16px_rgba(0,0,0,.08)] backdrop-blur md:left-60">
+        <div className="ml-auto flex max-w-6xl items-center justify-end gap-3">
+          <button type="button" onClick={() => history.back()} className="rounded border border-line px-6 py-2.5 font-semibold">Hủy</button>
+          <button type="submit" className="rounded bg-[#ee4d2d] px-7 py-2.5 font-bold text-white hover:bg-[#d93f22]">
+            {product?.id ? "Cập nhật" : "Thêm sản phẩm"}
+          </button>
+        </div>
+      </div>
     </form>
   );
 }
