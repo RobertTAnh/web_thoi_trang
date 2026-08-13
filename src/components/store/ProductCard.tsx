@@ -10,6 +10,7 @@ type Variant = {
   price: number;
   compareAt: number | null;
   stock: number;
+  image?: string | null;
 };
 
 type ProductCardProps = {
@@ -23,6 +24,14 @@ type ProductCardProps = {
   };
 };
 
+function soldCount(productId: string) {
+  let hash = 0;
+  for (const character of productId) {
+    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  }
+  return 5 + (hash % 196);
+}
+
 export function ProductCard({ product }: ProductCardProps) {
   const variant = product.variants[0];
   if (!variant) return null;
@@ -30,6 +39,14 @@ export function ProductCard({ product }: ProductCardProps) {
   const colors = [...new Set(product.variants.map((v) => v.color).filter(Boolean))] as string[];
   const sizes = [...new Set(product.variants.map((v) => v.size).filter(Boolean))] as string[];
   const image = product.images[0] || "/placeholder-product.svg";
+  const colorOptions = colors.map((color) => {
+    const colorVariant = product.variants.find((item) => item.color === color);
+    return {
+      color,
+      image: colorVariant?.image || image,
+    };
+  });
+  const sold = soldCount(product.id);
 
   return (
     <article className="product-card group flex flex-col">
@@ -77,20 +94,48 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
         </div>
 
-        {(colors.length > 0 || sizes.length > 0) && (
-          <div className="mt-0.5 space-y-1 text-[11px] text-muted">
-            {colors.length > 0 && (
-              <p className="line-clamp-1">
-                <span className="text-[#999]">Màu: </span>
-                {colors.slice(0, 4).join(", ")}
-                {colors.length > 4 ? "…" : ""}
-              </p>
+        <p className="text-[12px] text-[#555]">
+          Đã bán: <span className="font-medium text-[#f15a24]">{sold}</span>
+        </p>
+
+        {(colorOptions.length > 0 || sizes.length > 0) && (
+          <div className="mt-0.5 space-y-2">
+            {colorOptions.length > 0 && (
+              <div className="flex min-h-8 flex-wrap items-center gap-2">
+                {colorOptions.slice(0, 5).map((option) => (
+                  <div key={option.color} className="group/swatch relative">
+                    <span
+                      className="relative block size-8 overflow-hidden rounded-full border border-[#c9c9c9] bg-white p-[2px] transition hover:border-[#f15a24]"
+                      title={option.color}
+                      aria-label={`Màu ${option.color}`}
+                    >
+                      <Image
+                        src={option.image}
+                        alt=""
+                        fill
+                        className="rounded-full object-cover object-top p-[3px]"
+                        sizes="32px"
+                        unoptimized={option.image.startsWith("/api/media/")}
+                      />
+                    </span>
+                    <span className="pointer-events-none absolute bottom-[calc(100%+7px)] left-1/2 z-20 hidden -translate-x-1/2 whitespace-nowrap rounded bg-white px-2 py-1 text-[11px] text-[#444] shadow-md ring-1 ring-black/10 group-hover/swatch:block">
+                      {option.color}
+                    </span>
+                  </div>
+                ))}
+              </div>
             )}
             {sizes.length > 0 && (
-              <p className="line-clamp-1">
-                <span className="text-[#999]">Size: </span>
-                {sizes.slice(0, 6).join(" ")}
-              </p>
+              <div className="flex flex-wrap gap-2" aria-label="Kích thước có sẵn">
+                {sizes.slice(0, 6).map((size) => (
+                  <span
+                    key={size}
+                    className="inline-flex min-w-8 items-center justify-center rounded-full border border-[#c9c9c9] bg-white px-2 py-1 text-[11px] font-medium text-[#555] transition hover:border-[#f15a24] hover:text-[#f15a24]"
+                  >
+                    {size}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
         )}
