@@ -37,12 +37,16 @@ export function MobileNav({
     <>
       <button
         type="button"
-        className="relative z-[70] flex h-10 w-10 items-center justify-center text-xl lg:hidden"
+        className="relative z-[70] flex h-11 w-11 flex-col items-center justify-center gap-[6px] lg:hidden"
         aria-label={open ? "Đóng menu" : "Mở menu"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        {open ? "✕" : "☰"}
+        {open ? (
+          <span className="text-2xl">✕</span>
+        ) : (
+          <><span className="h-[3px] w-7 rounded bg-ink" /><span className="h-[3px] w-7 rounded bg-ink" /><span className="h-[3px] w-7 rounded bg-ink" /></>
+        )}
       </button>
 
       {open && (

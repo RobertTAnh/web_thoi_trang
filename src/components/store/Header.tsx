@@ -28,8 +28,8 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-white">
-      <div className="container-ega relative flex h-[70px] items-center justify-between gap-3">
-        <div className="relative z-[60] flex w-10 shrink-0 items-center lg:w-auto lg:flex-1">
+      <div className="container-ega relative flex h-[66px] items-center justify-between gap-2 border-x-4 border-transparent px-2 lg:h-[70px] lg:gap-3 lg:border-0">
+        <div className="relative z-[60] flex w-11 shrink-0 items-center lg:w-auto lg:flex-1">
           <MobileNav
             categories={categories}
             accountHref={accountHref}
@@ -80,12 +80,12 @@ export async function Header() {
 
         <Link
           href="/"
-          className="pointer-events-auto absolute left-1/2 z-10 -translate-x-1/2 text-[28px] font-bold tracking-[0.08em] uppercase lg:static lg:z-auto lg:translate-x-0"
+          className="pointer-events-auto absolute left-1/2 z-10 -translate-x-1/2 font-serif text-[31px] font-bold tracking-[0.04em] uppercase sm:text-[34px] lg:static lg:z-auto lg:translate-x-0 lg:font-sans lg:text-[28px] lg:tracking-[0.08em]"
         >
           {brand}
         </Link>
 
-        <div className="relative z-50 flex flex-1 items-center justify-end gap-4 text-[13px]">
+        <div className="relative z-50 flex flex-1 items-center justify-end gap-3 text-[13px] lg:gap-4">
           {session?.user ? (
             <Link
               href={session.user.role === "ADMIN" ? "/admin" : "/tai-khoan"}
@@ -103,13 +103,17 @@ export async function Header() {
               </Link>
             </>
           )}
+          <Link href="/collections" className="relative flex size-10 items-center justify-center lg:hidden" aria-label="Tìm kiếm sản phẩm">
+            <span className="block size-[23px] rounded-full border-[2.5px] border-ink after:absolute after:top-[27px] after:left-[27px] after:h-[10px] after:w-[2.5px] after:-rotate-45 after:bg-ink" />
+          </Link>
           <Link
             href="/gio-hang"
-            className="relative flex items-center gap-1 font-medium hover:text-accent"
+            className="relative flex size-10 items-center justify-center font-medium hover:text-accent lg:w-auto lg:gap-1"
+            aria-label={`Giỏ hàng có ${count} sản phẩm`}
           >
-            <span className="hidden xs:inline sm:inline">Giỏ hàng</span>
-            <span className="sm:hidden">Giỏ</span>
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] text-white">
+            <span className="relative block h-[25px] w-[22px] rounded-sm border-2 border-ink before:absolute before:-top-[7px] before:left-1/2 before:h-[9px] before:w-[10px] before:-translate-x-1/2 before:rounded-t-full before:border-2 before:border-b-0 before:border-ink lg:hidden" />
+            <span className="hidden lg:inline">Giỏ hàng</span>
+            <span className="absolute top-0 right-0 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] text-white lg:static">
               {count}
             </span>
           </Link>
