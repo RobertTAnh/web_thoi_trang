@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { getCart, cartTotals } from "@/lib/cart";
 import { prisma } from "@/lib/db";
 import { MobileNav } from "@/components/store/MobileNav";
+import { ScrollAwareHeader } from "@/components/store/ScrollAwareHeader";
 
 const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "Tisora";
 
@@ -27,7 +28,7 @@ export async function Header() {
     : "Đăng nhập";
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-white">
+    <ScrollAwareHeader>
       <div className="container-ega relative flex h-[66px] items-center justify-between gap-2 border-x-4 border-transparent px-2 lg:h-[78px] lg:max-w-none lg:gap-8 lg:border-0 lg:px-7">
         <div className="relative z-[60] flex w-11 shrink-0 items-center lg:order-2 lg:w-auto lg:flex-1 lg:justify-center">
           <MobileNav
@@ -105,6 +106,6 @@ export async function Header() {
           </Link>
         </div>
       </div>
-    </header>
+    </ScrollAwareHeader>
   );
 }
