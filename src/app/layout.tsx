@@ -9,14 +9,22 @@ const beVietnam = Be_Vietnam_Pro({
 });
 
 const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "Tisora";
+const description =
+  "Tisora mang đến thời trang nữ thanh lịch, hiện đại với các thiết kế đầm, vest và sơ mi tinh tế cho mọi phong cách.";
 
 export const metadata: Metadata = {
   title: {
     default: `${brand} — Thời trang nữ`,
     template: `%s | ${brand}`,
   },
-  description:
-    "Cửa hàng thời trang nữ — đầm, vest, sơ mi. Demo layout kiểu Sapo / EGA Style.",
+  description,
+  openGraph: {
+    title: `${brand} — Thời trang nữ`,
+    description,
+    siteName: brand,
+    locale: "vi_VN",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
