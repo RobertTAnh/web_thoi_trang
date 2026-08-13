@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { formatVnd, discountPercent } from "@/lib/utils";
@@ -73,6 +73,8 @@ export function ProductDetailClient({
   const [applyMsg, setApplyMsg] = useState<string | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [cartCount, setCartCount] = useState(initialCartCount);
+  const touchStartX = useRef<number | null>(null);
+  const suppressImageClick = useRef(false);
 
   useEffect(() => {
     try {
@@ -164,12 +166,35 @@ export function ProductDetailClient({
             ))}
           </div>
           <div
-            className="relative order-1 w-full min-w-0 cursor-zoom-in overflow-hidden bg-[#f5f5f5] md:order-2 md:flex-1"
+            className="relative order-1 w-full min-w-0 touch-pan-y cursor-zoom-in overflow-hidden bg-[#f5f5f5] md:order-2 md:flex-1"
             style={{ aspectRatio: "3 / 4" }}
             role="button"
             tabIndex={0}
             aria-label="Xem ảnh lớn"
-            onClick={() => setLightboxOpen(true)}
+            onClick={() => {
+              if (suppressImageClick.current) {
+                suppressImageClick.current = false;
+                return;
+              }
+              setLightboxOpen(true);
+            }}
+            onTouchStart={(e) => {
+              touchStartX.current = e.touches[0]?.clientX ?? null;
+            }}
+            onTouchEnd={(e) => {
+              if (touchStartX.current === null || gallery.length < 2) return;
+              const endX = e.changedTouches[0]?.clientX ?? touchStartX.current;
+              const distance = endX - touchStartX.current;
+              touchStartX.current = null;
+              if (Math.abs(distance) < 45) return;
+
+              suppressImageClick.current = true;
+              setActiveImg((i) =>
+                distance < 0
+                  ? (i + 1) % gallery.length
+                  : (i - 1 + gallery.length) % gallery.length,
+              );
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
@@ -192,7 +217,7 @@ export function ProductDetailClient({
                 <button
                   type="button"
                   aria-label="Ảnh trước"
-                  className="absolute top-1/2 left-2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow"
+                  className="absolute top-1/2 left-2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow md:flex"
                   onClick={(e) => {
                     e.stopPropagation();
                     setActiveImg((i) => (i - 1 + gallery.length) % gallery.length);
@@ -203,7 +228,7 @@ export function ProductDetailClient({
                 <button
                   type="button"
                   aria-label="Ảnh sau"
-                  className="absolute top-1/2 right-2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow"
+                  className="absolute top-1/2 right-2 z-10 hidden h-9 w-9 -translate-y-1/2 items-center justify-center bg-white/90 text-lg shadow md:flex"
                   onClick={(e) => {
                     e.stopPropagation();
                     setActiveImg((i) => (i + 1) % gallery.length);
