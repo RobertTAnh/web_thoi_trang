@@ -161,7 +161,7 @@ export default async function HomePage() {
         </div>
         <div className="grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-3 lg:grid-cols-5">
           {hot.slice(0, 10).map((p) => (
-            <ProductCard key={`fs-${p.id}`} product={p} />
+            <ProductCard key={`fs-${p.id}`} product={p} showFlashProgress />
           ))}
         </div>
       </section>

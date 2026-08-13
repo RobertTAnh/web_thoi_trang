@@ -22,6 +22,7 @@ type ProductCardProps = {
     images: string[];
     variants: Variant[];
   };
+  showFlashProgress?: boolean;
 };
 
 function soldCount(productId: string) {
@@ -32,7 +33,7 @@ function soldCount(productId: string) {
   return 5 + (hash % 196);
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, showFlashProgress = false }: ProductCardProps) {
   const variant = product.variants[0];
   if (!variant) return null;
   const pct = discountPercent(variant.price, variant.compareAt);
@@ -47,6 +48,16 @@ export function ProductCard({ product }: ProductCardProps) {
     };
   });
   const sold = soldCount(product.id);
+  const totalStock = product.variants.reduce((sum, item) => sum + item.stock, 0);
+  const flashProgress = totalStock <= 0 ? 100 : 12 + ((sold * 7) % 84);
+  const flashLabel =
+    totalStock <= 0
+      ? "Hết hàng"
+      : flashProgress >= 78
+        ? "Sắp cháy hàng"
+        : flashProgress >= 45
+          ? `Đã bán ${sold} sản phẩm`
+          : "Vừa mở bán";
 
   return (
     <article className="product-card group flex flex-col">
@@ -149,6 +160,27 @@ export function ProductCard({ product }: ProductCardProps) {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {showFlashProgress && (
+          <div className="mt-auto pt-2">
+            <div className="rounded-md border border-[#f3d8d8] bg-white px-2.5 py-2 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
+              <div className="mb-1.5 flex min-h-5 items-center gap-1.5 text-[11px] font-medium text-[#444] sm:text-[12px]">
+                {flashProgress >= 78 && totalStock > 0 && (
+                  <span className="text-[17px] leading-none" aria-hidden>
+                    🔥
+                  </span>
+                )}
+                <span>{flashLabel}</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-[#f7cccc]">
+                <div
+                  className="h-full rounded-full bg-[#e31c23]"
+                  style={{ width: `${flashProgress}%` }}
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>
