@@ -9,12 +9,13 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [product, categories] = await Promise.all([
+  const [product, categories, media] = await Promise.all([
     prisma.product.findUnique({
       where: { id },
       include: { variants: { orderBy: { createdAt: "asc" } } },
     }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
+    prisma.mediaAsset.findMany({ orderBy: { createdAt: "desc" }, take: 200, select: { id: true, filename: true } }),
   ]);
   if (!product) notFound();
 
@@ -32,6 +33,7 @@ export default async function EditProductPage({
       <div className="mt-6 max-w-6xl">
         <ProductForm
           categories={categories}
+          media={media}
           product={{
             id: product.id,
             name: product.name,

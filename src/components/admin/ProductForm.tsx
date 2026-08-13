@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { saveProductAction, uploadProductImagesAction } from "@/app/admin/actions";
 import { formatVnd } from "@/lib/utils";
+import { ProductDescriptionEditor } from "@/components/admin/ProductDescriptionEditor";
 
 type Category = { id: string; name: string };
 
@@ -74,9 +75,11 @@ function bulkFromVariant(v?: VariantFormRow): BulkFields {
 export function ProductForm({
   categories,
   product,
+  media = [],
 }: {
   categories: Category[];
   product?: ProductValues;
+  media?: { id: string; filename: string }[];
 }) {
   const [variants, setVariants] = useState<VariantFormRow[]>(
     product?.variants?.length ? product.variants : [emptyVariant()],
@@ -384,10 +387,10 @@ export function ProductForm({
 
       <section id="description" className="mt-5 scroll-mt-24 rounded-lg border border-line bg-white p-5 shadow-sm md:p-7">
         <h2 className="mb-6 text-2xl font-bold">Mô tả</h2>
-        <label className="space-y-2 font-bold">
-          <span><span className="text-[#ee4d2d]">*</span> Mô tả sản phẩm</span>
-          <textarea name="description" defaultValue={product?.description || ""} placeholder="Nhập mô tả sản phẩm" rows={12} className="w-full rounded border border-line px-4 py-3 font-normal leading-6" />
-        </label>
+        <div className="space-y-2">
+          <p className="font-bold"><span className="text-[#ee4d2d]">*</span> Mô tả sản phẩm</p>
+          <ProductDescriptionEditor value={product?.description || ""} media={media} />
+        </div>
       </section>
 
       <section id="sales" className="mt-5 scroll-mt-24 rounded-lg border border-line bg-white p-5 shadow-sm md:p-7">
