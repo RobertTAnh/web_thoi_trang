@@ -15,7 +15,7 @@ function initialHtml(value: string) {
 
 export function ProductDescriptionEditor({ value, media }: { value: string; media: MediaItem[] }) {
   const editorRef = useRef<HTMLDivElement>(null);
-  const rangeRef = useRef<Range | null>(null);
+  const markerIdRef = useRef<string | null>(null);
   const [html, setHtml] = useState(() => initialHtml(value));
   const [items, setItems] = useState(media);
   const [showImageMenu, setShowImageMenu] = useState(false);
@@ -28,22 +28,61 @@ export function ProductDescriptionEditor({ value, media }: { value: string; medi
     setHtml(editorRef.current?.innerHTML || "");
   }
 
-  function rememberSelection() {
+  function markSelection() {
+    const editor = editorRef.current;
+    if (!editor) return;
+    editor.querySelectorAll("[data-image-marker]").forEach((marker) => marker.remove());
     const selection = window.getSelection();
-    if (selection?.rangeCount) rangeRef.current = selection.getRangeAt(0).cloneRange();
+    const markerId = `image-marker-${Date.now()}`;
+    const marker = document.createElement("span");
+    marker.id = markerId;
+    marker.dataset.imageMarker = "true";
+    marker.textContent = "\u200b";
+
+    if (selection?.rangeCount) {
+      const range = selection.getRangeAt(0).cloneRange();
+      if (editor.contains(range.commonAncestorContainer)) {
+        range.collapse(true);
+        range.insertNode(marker);
+      } else {
+        editor.appendChild(marker);
+      }
+    } else {
+      editor.appendChild(marker);
+    }
+    markerIdRef.current = markerId;
+    setHtml(editor.innerHTML);
   }
 
   function insertImage(src: string) {
-    editorRef.current?.focus();
-    const selection = window.getSelection();
-    if (selection && rangeRef.current) {
-      selection.removeAllRanges();
-      selection.addRange(rangeRef.current);
+    const editor = editorRef.current;
+    if (!editor) return;
+    const marker = markerIdRef.current
+      ? editor.querySelector<HTMLElement>(`#${markerIdRef.current}`)
+      : null;
+    const imageBlock = document.createElement("p");
+    imageBlock.innerHTML = `<img src="${src}" alt="Ảnh mô tả sản phẩm" style="max-width:100%;height:auto" />`;
+    const paragraph = document.createElement("p");
+    paragraph.innerHTML = "<br>";
+
+    if (marker) {
+      marker.replaceWith(imageBlock, paragraph);
+    } else {
+      editor.append(imageBlock, paragraph);
     }
-    document.execCommand("insertHTML", false, `<p><img src="${src}" alt="Ảnh mô tả sản phẩm" style="max-width:100%;height:auto" /></p><p><br></p>`);
-    setHtml(editorRef.current?.innerHTML || "");
+    markerIdRef.current = null;
+    setHtml(editor.innerHTML);
     setShowImageMenu(false);
     setShowLibrary(false);
+    requestAnimationFrame(() => {
+      editor.focus();
+      const range = document.createRange();
+      range.selectNodeContents(paragraph);
+      range.collapse(true);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    });
   }
 
   const toolClass = "min-w-9 rounded border border-line bg-white px-2 py-1.5 text-sm font-medium hover:border-[#ee4d2d] hover:text-[#ee4d2d]";
@@ -67,7 +106,7 @@ export function ProductDescriptionEditor({ value, media }: { value: string; medi
         <button type="button" className={toolClass} onClick={() => run("justifyCenter")} title="Căn giữa">≡</button>
         <button type="button" className={toolClass} onClick={() => run("createLink", prompt("Nhập đường dẫn") || "")} title="Chèn liên kết">🔗</button>
         <div className="relative">
-          <button type="button" className="rounded bg-[#ee4d2d] px-3 py-1.5 font-semibold text-white" onMouseDown={rememberSelection} onClick={() => setShowImageMenu((open) => !open)}>▧ Chèn ảnh</button>
+          <button type="button" className="rounded bg-[#ee4d2d] px-3 py-1.5 font-semibold text-white" onMouseDown={(event) => { event.preventDefault(); markSelection(); }} onClick={() => setShowImageMenu((open) => !open)}>▧ Chèn ảnh</button>
           {showImageMenu && (
             <div className="absolute left-0 top-full z-30 mt-1 w-48 rounded border border-line bg-white p-1 shadow-lg">
               <button type="button" className="block w-full rounded px-3 py-2 text-left hover:bg-[#fff2ef]" onClick={() => setShowLibrary(true)}>Chọn từ thư viện</button>
