@@ -8,11 +8,13 @@ export function AddToCartButton({
   quantity = 1,
   className,
   label = "Thêm vào giỏ",
+  onAdded,
 }: {
   variantId: string;
   quantity?: number;
   className?: string;
   label?: string;
+  onAdded?: (quantity: number) => void;
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -24,6 +26,7 @@ export function AddToCartButton({
       onClick={() => {
         startTransition(async () => {
           await addToCart(variantId, quantity);
+          onAdded?.(quantity);
         });
       }}
     >

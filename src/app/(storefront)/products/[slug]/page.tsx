@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { ProductDetailClient } from "@/components/store/ProductDetailClient";
 import { ProductCard } from "@/components/store/ProductCard";
+import { getCart } from "@/lib/cart";
 
 export default async function ProductPage({
   params,
@@ -17,7 +18,7 @@ export default async function ProductPage({
 
   if (!product || !product.published) notFound();
 
-  const [flashSale, related, coupons, categories] = await Promise.all([
+  const [flashSale, related, coupons, categories, cart] = await Promise.all([
     prisma.flashSale.findFirst({
       where: { active: true, endsAt: { gt: new Date() } },
       orderBy: { endsAt: "asc" },
@@ -40,12 +41,13 @@ export default async function ProductPage({
       orderBy: { sortOrder: "asc" },
       take: 12,
     }),
+    getCart(),
   ]);
 
   const likeCategories = categories.slice(0, 10);
 
   return (
-    <div className="container-ega py-6 md:py-10">
+    <div className="container-ega pt-6 pb-28 md:pt-10 md:pb-28 lg:pb-10">
       <nav className="mb-5 text-[13px] text-muted">
         <Link href="/" className="hover:text-accent">
           Trang chủ
@@ -67,6 +69,7 @@ export default async function ProductPage({
 
       <ProductDetailClient
         product={product}
+        initialCartCount={cart.items.reduce((sum, item) => sum + item.quantity, 0)}
         flashEndsAt={flashSale?.endsAt ?? null}
         coupons={coupons.map((c) => ({
           code: c.code,

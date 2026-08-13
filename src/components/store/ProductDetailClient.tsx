@@ -48,6 +48,7 @@ export function ProductDetailClient({
   flashEndsAt,
   coupons = [],
   relatedCategories = [],
+  initialCartCount = 0,
 }: {
   product: {
     name: string;
@@ -59,6 +60,7 @@ export function ProductDetailClient({
   flashEndsAt?: string | Date | null;
   coupons?: CouponItem[];
   relatedCategories?: CategoryLink[];
+  initialCartCount?: number;
 }) {
   const gallery = product.images.length
     ? product.images
@@ -70,6 +72,7 @@ export function ProductDetailClient({
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
   const [applyMsg, setApplyMsg] = useState<string | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(initialCartCount);
 
   useEffect(() => {
     try {
@@ -474,6 +477,57 @@ export function ProductDetailClient({
               nguyên tem mác, chưa qua sử dụng.
             </p>
           )}
+        </div>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-black/10 bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.16)] lg:hidden">
+        <div className="mx-auto flex h-[72px] max-w-screen-sm items-stretch">
+          <a
+            href="https://zalo.me/"
+            target="_blank"
+            rel="noreferrer"
+            className="flex w-[72px] shrink-0 flex-col items-center justify-center gap-1 text-[11px] text-accent"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current" strokeWidth="1.8">
+              <path d="M5 5.5h14v10H9l-4 3v-13Z" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M8 9h8M8 12h5" strokeLinecap="round" />
+            </svg>
+            <span>Nhắn tin</span>
+          </a>
+          <a
+            href="tel:19006750"
+            className="flex w-[72px] shrink-0 flex-col items-center justify-center gap-1 text-[11px] text-accent"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current" strokeWidth="1.8">
+              <path d="M7.2 3.5 10 7.8 8.3 9.5c1.2 2.5 3.2 4.5 5.7 5.7l1.7-1.7 4.3 2.8v3c0 .7-.6 1.2-1.2 1.2C10.3 20.2 3.8 13.7 3.5 5.2 3.5 4.6 4 4 4.7 4l2.5-.5Z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span>Gọi điện</span>
+          </a>
+          <Link
+            href="/gio-hang"
+            className="relative flex w-[78px] shrink-0 flex-col items-center justify-center gap-1 text-[11px] text-accent"
+          >
+            <span className="relative" aria-hidden="true">
+              <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current" strokeWidth="1.8">
+                <path d="M3 4h2l2.1 10.2a2 2 0 0 0 2 1.6h7.8a2 2 0 0 0 2-1.6L20 8H6" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="9.5" cy="19" r="1" fill="currentColor" stroke="none" />
+                <circle cx="17" cy="19" r="1" fill="currentColor" stroke="none" />
+              </svg>
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-3 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#e51f2a] px-1 text-[10px] font-bold text-white">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </span>
+            <span>Giỏ hàng</span>
+          </Link>
+          <AddToCartButton
+            variantId={variant.id}
+            quantity={qty}
+            onAdded={(amount) => setCartCount((count) => count + amount)}
+            className="min-w-0 flex-1 bg-[#d86418] px-3 text-[16px] font-semibold text-white disabled:opacity-50"
+            label="Thêm vào giỏ"
+          />
         </div>
       </div>
     </div>
