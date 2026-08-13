@@ -106,6 +106,11 @@ export function ProductForm({
         .filter(Boolean),
     [imagesText],
   );
+  const variantRows = useMemo(
+    () => variants.map((variant, originalIndex) => ({ variant, originalIndex }))
+      .sort((a, b) => (a.variant.color || "").localeCompare(b.variant.color || "", "vi") || (a.variant.size || "").localeCompare(b.variant.size || "", "vi")),
+    [variants],
+  );
   function updateVariant(index: number, patch: Partial<VariantFormRow>) {
     setVariants((prev) => prev.map((v, i) => (i === index ? { ...v, ...patch } : v)));
   }
@@ -496,144 +501,61 @@ export function ProductForm({
         </div>
       </div>
 
-      <div className="mt-5 space-y-3 overflow-x-auto rounded border border-line p-4 [scrollbar-color:#ee4d2d_#eee] [scrollbar-width:thin]">
-        <div className="flex items-center justify-between">
-          <h3 className="font-medium">Biến thể</h3>
-          <button
-            type="button"
-            className="text-accent"
-            onClick={() => setVariants((v) => [...v, emptyVariant()])}
-          >
-            + Thêm biến thể
+      <div className="mt-5 rounded border border-line bg-white p-4">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <h3 className="font-bold">Danh sách phân loại hàng</h3>
+            <p className="mt-1 text-xs text-muted">Kéo thanh phía dưới sang phải để chỉnh đầy đủ giá, kho và SKU.</p>
+          </div>
+          <button type="button" className="shrink-0 rounded bg-[#f5a091] px-4 py-2 font-semibold text-white" onClick={applyBulkToAll}>
+            Áp dụng cho tất cả phân loại
           </button>
         </div>
-        <p className="text-xs text-muted">
-          Mỗi khối = 1 biến thể (màu + size). Sửa lệch sau khi áp dụng khối chính.
-        </p>
-        {variants.map((v, index) => (
-          <div key={v.id || index} className="min-w-[720px] space-y-3 border-t border-line pt-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <label className="relative flex size-14 cursor-pointer items-center justify-center overflow-hidden rounded border border-line bg-[#fafafa] text-center text-[10px] text-muted hover:border-[#ee4d2d]">
-                  {v.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={v.image} alt="" className="h-full w-full object-cover" />
-                  ) : "Tải ảnh"}
-                  <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={(event) => { uploadColorImage(v.color || "", Array.from(event.target.files || [])); event.target.value = ""; }} />
-                </label>
-                <p className="text-xs font-medium text-muted">
-                  #{index + 1}
-                  {v.color || v.size ? ` · ${[v.color, v.size].filter(Boolean).join(" / ")}` : ""}
-                </p>
-              </div>
-              {variants.length > 1 && (
-                <button
-                  type="button"
-                  className="text-xs text-sale"
-                  onClick={() => setVariants((prev) => prev.filter((_, i) => i !== index))}
-                >
-                  Xóa
-                </button>
-              )}
-            </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              <label className="block space-y-1">
-                <span className="text-xs text-muted">SKU</span>
-                <input
-                  value={v.sku || ""}
-                  onChange={(e) => updateVariant(index, { sku: e.target.value })}
-                  className="w-full border border-line px-2 py-1.5"
-                />
-              </label>
-              <label className="block space-y-1">
-                <span className="text-xs text-muted">Màu</span>
-                <input
-                  value={v.color || ""}
-                  onChange={(e) => updateVariant(index, { color: e.target.value })}
-                  className="w-full border border-line px-2 py-1.5"
-                />
-              </label>
-              <label className="block space-y-1">
-                <span className="text-xs text-muted">Size</span>
-                <input
-                  value={v.size || ""}
-                  onChange={(e) => updateVariant(index, { size: e.target.value })}
-                  className="w-full border border-line px-2 py-1.5"
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <label className="block space-y-1">
-                <span className="text-xs text-muted">Giá gốc (gạch ngang trên web)</span>
-                <input
-                  type="number"
-                  value={v.compareAt ?? ""}
-                  onChange={(e) =>
-                    updateVariant(index, {
-                      compareAt: e.target.value === "" ? null : Number(e.target.value),
-                    })
-                  }
-                  className="w-full border border-line px-2 py-1.5"
-                />
-              </label>
-              <label className="block space-y-1">
-                <span className="text-xs text-muted">Giá bán (hiển thị web)</span>
-                <input
-                  type="number"
-                  value={v.price ?? 0}
-                  onChange={(e) => updateVariant(index, { price: Number(e.target.value) })}
-                  className="w-full border border-line px-2 py-1.5"
-                  required
-                />
-              </label>
-              <label className="block space-y-1">
-                <span className="text-xs text-muted">Giá nhập</span>
-                <input
-                  type="number"
-                  value={v.costPrice ?? ""}
-                  onChange={(e) =>
-                    updateVariant(index, {
-                      costPrice: e.target.value === "" ? null : Number(e.target.value),
-                    })
-                  }
-                  className="w-full border border-line px-2 py-1.5"
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <label className="block space-y-1">
-                <span className="text-xs text-muted">Giá buôn</span>
-                <input
-                  type="number"
-                  value={v.wholesalePrice ?? ""}
-                  onChange={(e) =>
-                    updateVariant(index, {
-                      wholesalePrice: e.target.value === "" ? null : Number(e.target.value),
-                    })
-                  }
-                  className="w-full border border-line px-2 py-1.5"
-                />
-              </label>
-              <label className="block space-y-1">
-                <span className="text-xs text-muted">Tồn kho</span>
-                <input
-                  type="number"
-                  value={v.stock ?? 0}
-                  onChange={(e) => updateVariant(index, { stock: Number(e.target.value) })}
-                  className="w-full border border-line px-2 py-1.5"
-                />
-              </label>
-              <div className="flex items-end">
-                <p className="w-full border border-dashed border-line bg-[#faf7f5] px-2 py-1.5 text-xs">
-                  Lãi / SP: <strong>{marginLabel(v.price || 0, v.costPrice)}</strong>
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
+        <div className="overflow-x-auto rounded border border-line [scrollbar-color:#ee4d2d_#eee] [scrollbar-width:thin]">
+          <table className="min-w-[1480px] table-fixed border-collapse text-left">
+            <thead className="bg-[#f7f7f7]">
+              <tr>
+                {[
+                  ["Màu sắc", "150px"], ["Kích thước", "120px"],
+                  ["Giá gốc", "160px"], ["Giá bán", "160px"], ["Giá nhập", "160px"],
+                  ["Giá buôn", "160px"], ["Kho hàng", "150px"], ["SKU phân loại", "180px"],
+                  ["Lãi / SP", "160px"], ["", "70px"],
+                ].map(([label, width]) => <th key={label || "actions"} style={{ width }} className="border-r border-line px-3 py-3 font-medium last:border-r-0">{label}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {variantRows.map(({ variant, originalIndex }, rowIndex) => {
+                const firstOfColor = rowIndex === 0 || variantRows[rowIndex - 1]?.variant.color !== variant.color;
+                return (
+                  <tr key={variant.id || `${variant.color}-${variant.size}-${originalIndex}`} className="border-t border-line align-middle">
+                    {firstOfColor && (
+                      <td rowSpan={variantRows.filter((item) => item.variant.color === variant.color).length} className="border-r border-line px-3 py-3 text-center align-middle">
+                        <p className="mb-3 font-medium">{variant.color || "Mặc định"}</p>
+                        <label className="relative mx-auto flex size-14 cursor-pointer items-center justify-center overflow-hidden rounded border border-line bg-[#fafafa] text-center text-[10px] text-muted hover:border-[#ee4d2d]">
+                          {variant.image ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={variant.image} alt="" className="h-full w-full object-cover" />
+                          ) : "Tải ảnh"}
+                          <input type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" onChange={(event) => { uploadColorImage(variant.color || "", Array.from(event.target.files || [])); event.target.value = ""; }} />
+                        </label>
+                      </td>
+                    )}
+                    <td className="border-r border-line px-3 py-3">{variant.size || "Freesize"}</td>
+                    <td className="border-r border-line p-2"><input aria-label="Giá gốc" type="number" value={variant.compareAt ?? ""} onChange={(event) => updateVariant(originalIndex, { compareAt: event.target.value === "" ? null : Number(event.target.value) })} className="w-full rounded border border-line px-3 py-2" /></td>
+                    <td className="border-r border-line p-2"><input aria-label="Giá bán" required type="number" value={variant.price ?? 0} onChange={(event) => updateVariant(originalIndex, { price: Number(event.target.value) })} className="w-full rounded border border-line px-3 py-2" /></td>
+                    <td className="border-r border-line p-2"><input aria-label="Giá nhập" type="number" value={variant.costPrice ?? ""} onChange={(event) => updateVariant(originalIndex, { costPrice: event.target.value === "" ? null : Number(event.target.value) })} className="w-full rounded border border-line px-3 py-2" /></td>
+                    <td className="border-r border-line p-2"><input aria-label="Giá buôn" type="number" value={variant.wholesalePrice ?? ""} onChange={(event) => updateVariant(originalIndex, { wholesalePrice: event.target.value === "" ? null : Number(event.target.value) })} className="w-full rounded border border-line px-3 py-2" /></td>
+                    <td className="border-r border-line p-2"><input aria-label="Tồn kho" type="number" value={variant.stock ?? 0} onChange={(event) => updateVariant(originalIndex, { stock: Number(event.target.value) })} className="w-full rounded border border-line px-3 py-2" /></td>
+                    <td className="border-r border-line p-2"><input aria-label="SKU" value={variant.sku || ""} onChange={(event) => updateVariant(originalIndex, { sku: event.target.value })} className="w-full rounded border border-line px-3 py-2" /></td>
+                    <td className="border-r border-line px-3 py-3 text-xs"><strong>{marginLabel(variant.price || 0, variant.costPrice)}</strong></td>
+                    <td className="px-2 text-center">{variants.length > 1 && <button type="button" onClick={() => setVariants((current) => current.filter((_, itemIndex) => itemIndex !== originalIndex))} className="text-xs text-sale">Xóa</button>}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
         <div className="mt-6 rounded border border-line p-4">
