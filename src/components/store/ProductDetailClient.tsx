@@ -525,7 +525,7 @@ export function ProductDetailClient({
             variantId={variant.id}
             quantity={qty}
             onAdded={(amount) => setCartCount((count) => count + amount)}
-            className="min-w-0 flex-1 bg-[#d86418] px-3 text-[16px] font-semibold text-white disabled:opacity-50"
+            className="min-w-0 flex-1 bg-accent px-3 text-[16px] font-semibold text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
             label="Thêm vào giỏ"
           />
         </div>
