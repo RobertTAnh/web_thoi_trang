@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export type PopupProduct = {
   name: string;
@@ -111,6 +112,8 @@ type Toast = {
 };
 
 export function RecentPurchasePopup({ products }: { products: PopupProduct[] }) {
+  const pathname = usePathname();
+  const hasMobileProductBar = pathname.startsWith("/products/");
   const [toast, setToast] = useState<Toast | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -164,7 +167,9 @@ export function RecentPurchasePopup({ products }: { products: PopupProduct[] }) 
 
   return (
     <div
-      className={`fixed bottom-4 left-4 z-40 max-w-[min(92vw,340px)] transition-all duration-500 ${
+      className={`fixed left-4 z-40 max-w-[min(92vw,340px)] transition-all duration-500 ${
+        hasMobileProductBar ? "bottom-[88px] lg:bottom-4" : "bottom-4"
+      } ${
         visible
           ? "translate-y-0 opacity-100"
           : "pointer-events-none translate-y-4 opacity-0"
