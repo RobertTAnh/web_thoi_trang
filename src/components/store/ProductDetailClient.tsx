@@ -141,14 +141,14 @@ export function ProductDetailClient({
     <div>
       <div className="grid items-start gap-8 lg:grid-cols-2">
         {/* Gallery — khung 3:4 y đối thủ */}
-        <div className="flex w-full gap-2 self-start md:gap-3">
-          <div className="flex w-12 shrink-0 flex-col gap-2 sm:w-14 md:w-16">
+        <div className="flex w-full flex-col gap-2 self-start md:flex-row md:gap-3">
+          <div className="order-2 flex w-full gap-2 overflow-x-auto pb-1 md:order-1 md:w-16 md:shrink-0 md:flex-col md:overflow-visible md:pb-0">
             {gallery.slice(0, 8).map((src, i) => (
               <button
                 key={src + i}
                 type="button"
                 onClick={() => setActiveImg(i)}
-                className={`relative aspect-[3/4] w-full overflow-hidden border ${
+                className={`relative aspect-[3/4] w-14 shrink-0 overflow-hidden border md:w-full ${
                   activeImg === i ? "border-accent" : "border-line"
                 }`}
               >
@@ -164,7 +164,7 @@ export function ProductDetailClient({
             ))}
           </div>
           <div
-            className="relative min-w-0 flex-1 cursor-zoom-in overflow-hidden bg-[#f5f5f5]"
+            className="relative order-1 w-full min-w-0 cursor-zoom-in overflow-hidden bg-[#f5f5f5] md:order-2 md:flex-1"
             style={{ aspectRatio: "3 / 4" }}
             role="button"
             tabIndex={0}
