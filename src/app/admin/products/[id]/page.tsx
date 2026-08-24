@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { ProductForm } from "@/components/admin/ProductForm";
@@ -23,12 +24,22 @@ export default async function EditProductPage({
     <div>
       <div className="flex items-center justify-between">
         <h1 className="font-display text-4xl">Sửa sản phẩm</h1>
-        <form action={deleteProductAction}>
-          <input type="hidden" name="id" value={product.id} />
-          <button type="submit" className="text-sm text-sale">
-            Xóa
-          </button>
-        </form>
+        <div className="flex items-center gap-4">
+          <Link
+            href={`/products/${product.slug}`}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded border border-line px-4 py-2 text-sm font-medium hover:border-accent hover:text-accent"
+          >
+            Xem trang
+          </Link>
+          <form action={deleteProductAction}>
+            <input type="hidden" name="id" value={product.id} />
+            <button type="submit" className="text-sm text-sale">
+              Xóa
+            </button>
+          </form>
+        </div>
       </div>
       <div className="mt-6 max-w-6xl">
         <ProductForm
