@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { uploadProductImagesAction } from "@/app/admin/actions";
 
 type MediaItem = { id: string; filename: string };
@@ -15,17 +15,34 @@ function initialHtml(value: string) {
 
 export function ProductDescriptionEditor({ value, media }: { value: string; media: MediaItem[] }) {
   const editorRef = useRef<HTMLDivElement>(null);
+  const hiddenInputRef = useRef<HTMLInputElement>(null);
   const markerIdRef = useRef<string | null>(null);
-  const [html, setHtml] = useState(() => initialHtml(value));
+  const initializedRef = useRef(false);
   const [items, setItems] = useState(media);
   const [showImageMenu, setShowImageMenu] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
   const [pending, startTransition] = useTransition();
 
+  function syncHtml() {
+    const html = editorRef.current?.innerHTML || "";
+    if (hiddenInputRef.current) hiddenInputRef.current.value = html;
+    return html;
+  }
+
+  useEffect(() => {
+    if (initializedRef.current) return;
+    const editor = editorRef.current;
+    if (!editor) return;
+    const html = initialHtml(value);
+    editor.innerHTML = html;
+    if (hiddenInputRef.current) hiddenInputRef.current.value = html;
+    initializedRef.current = true;
+  }, [value]);
+
   function run(command: string, commandValue?: string) {
     editorRef.current?.focus();
     document.execCommand(command, false, commandValue);
-    setHtml(editorRef.current?.innerHTML || "");
+    syncHtml();
   }
 
   function markSelection() {
@@ -51,7 +68,7 @@ export function ProductDescriptionEditor({ value, media }: { value: string; medi
       editor.appendChild(marker);
     }
     markerIdRef.current = markerId;
-    setHtml(editor.innerHTML);
+    syncHtml();
   }
 
   function insertImage(src: string) {
@@ -71,7 +88,7 @@ export function ProductDescriptionEditor({ value, media }: { value: string; medi
       editor.append(imageBlock, paragraph);
     }
     markerIdRef.current = null;
-    setHtml(editor.innerHTML);
+    syncHtml();
     setShowImageMenu(false);
     setShowLibrary(false);
     requestAnimationFrame(() => {
@@ -89,7 +106,7 @@ export function ProductDescriptionEditor({ value, media }: { value: string; medi
 
   return (
     <div className="relative">
-      <input type="hidden" name="description" value={html} />
+      <input ref={hiddenInputRef} type="hidden" name="description" defaultValue="" />
       <div className="flex flex-wrap items-center gap-1 rounded-t border border-line bg-[#f7f7f7] p-2">
         <button type="button" className={toolClass} onClick={() => run("bold")} title="In đậm"><strong>B</strong></button>
         <button type="button" className={toolClass} onClick={() => run("italic")} title="In nghiêng"><em>I</em></button>
@@ -129,7 +146,7 @@ export function ProductDescriptionEditor({ value, media }: { value: string; medi
           )}
         </div>
       </div>
-      <div ref={editorRef} contentEditable suppressContentEditableWarning onInput={() => setHtml(editorRef.current?.innerHTML || "")} dangerouslySetInnerHTML={{ __html: html }} className="min-h-[360px] overflow-y-auto rounded-b border-x border-b border-line bg-white px-4 py-3 text-base leading-7 outline-none focus:border-[#ee4d2d] [&_h2]:my-3 [&_h2]:text-2xl [&_h2]:font-bold [&_h3]:my-2 [&_h3]:text-xl [&_h3]:font-bold [&_img]:my-4 [&_img]:max-w-full [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6" />
+      <div ref={editorRef} contentEditable suppressContentEditableWarning onInput={syncHtml} className="min-h-[360px] overflow-y-auto rounded-b border-x border-b border-line bg-white px-4 py-3 text-base leading-7 outline-none focus:border-[#ee4d2d] [&_h2]:my-3 [&_h2]:text-2xl [&_h2]:font-bold [&_h3]:my-2 [&_h3]:text-xl [&_h3]:font-bold [&_img]:my-4 [&_img]:max-w-full [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6" />
 
       {showLibrary && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4" onMouseDown={() => setShowLibrary(false)}>

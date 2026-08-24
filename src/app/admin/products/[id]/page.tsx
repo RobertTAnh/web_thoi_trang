@@ -6,10 +6,13 @@ import { deleteProductAction } from "@/app/admin/actions";
 
 export default async function EditProductPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ saved?: string }>;
 }) {
   const { id } = await params;
+  const { saved } = await searchParams;
   const [product, categories, media] = await Promise.all([
     prisma.product.findUnique({
       where: { id },
@@ -22,6 +25,11 @@ export default async function EditProductPage({
 
   return (
     <div>
+      {saved === "1" && (
+        <p className="mb-4 rounded border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
+          Đã cập nhật sản phẩm.
+        </p>
+      )}
       <div className="flex items-center justify-between">
         <h1 className="font-display text-4xl">Sửa sản phẩm</h1>
         <div className="flex items-center gap-4">

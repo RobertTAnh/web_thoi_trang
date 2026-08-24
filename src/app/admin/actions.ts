@@ -116,6 +116,8 @@ export async function saveProductAction(formData: FormData) {
     };
   };
 
+  let savedId = id;
+
   if (id) {
     await prisma.product.update({
       where: { id },
@@ -163,7 +165,7 @@ export async function saveProductAction(formData: FormData) {
       },
     });
   } else {
-    await prisma.product.create({
+    const created = await prisma.product.create({
       data: {
         name,
         slug,
@@ -178,11 +180,14 @@ export async function saveProductAction(formData: FormData) {
         },
       },
     });
+    savedId = created.id;
   }
 
   revalidatePath("/admin/products");
+  revalidatePath(`/admin/products/${savedId}`);
   revalidatePath("/admin/crm");
-  redirect("/admin/products");
+  revalidatePath(`/products/${slug}`);
+  redirect(`/admin/products/${savedId}?saved=1`);
 }
 
 export async function importSapoExcelAction(formData: FormData) {
