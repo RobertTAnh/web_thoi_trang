@@ -187,7 +187,9 @@ export async function saveProductAction(formData: FormData) {
   revalidatePath(`/admin/products/${savedId}`);
   revalidatePath("/admin/crm");
   revalidatePath(`/products/${slug}`);
-  redirect(`/admin/products/${savedId}?saved=1`);
+  if (!id) {
+    redirect(`/admin/products/${savedId}`);
+  }
 }
 
 export async function importSapoExcelAction(formData: FormData) {

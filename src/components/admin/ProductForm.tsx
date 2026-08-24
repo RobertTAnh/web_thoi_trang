@@ -93,6 +93,7 @@ export function ProductForm({
   const [bulkMsg, setBulkMsg] = useState<string | null>(null);
   const [imageMsg, setImageMsg] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState("basic");
+  const [savedNotice, setSavedNotice] = useState(false);
   const [isUploading, startImageUpload] = useTransition();
   const [colors, setColors] = useState<string[]>(() => [
     ...new Set((product?.variants || []).map((variant) => variant.color?.trim()).filter(Boolean)),
@@ -226,8 +227,19 @@ export function ProductForm({
     setBulkMsg(`Đã áp dụng cho ${variants.length} biến thể. Sửa lệch ở từng dòng bên dưới nếu cần.`);
   }
 
+  async function handleSave(formData: FormData) {
+    await saveProductAction(formData);
+    setSavedNotice(true);
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }
+
   return (
-    <form action={saveProductAction} className="product-editor pb-24 text-sm">
+    <form action={handleSave} className="product-editor pb-24 text-sm">
+      {savedNotice && (
+        <p className="mb-4 rounded border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
+          Đã cập nhật sản phẩm.
+        </p>
+      )}
       {product?.id && <input type="hidden" name="id" value={product.id} />}
       <input type="hidden" name="variantsJson" value={JSON.stringify(variants)} />
       <input type="hidden" name="imagesJson" value={JSON.stringify(galleryPreview)} />
