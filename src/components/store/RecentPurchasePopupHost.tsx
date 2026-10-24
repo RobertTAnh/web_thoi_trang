@@ -1,18 +1,8 @@
-import { prisma } from "@/lib/db";
+import { getRecentPurchaseProducts } from "@/lib/catalog";
 import { RecentPurchasePopup } from "@/components/store/RecentPurchasePopup";
 
 export async function RecentPurchasePopupHost() {
-  const products = await prisma.product.findMany({
-    where: { published: true },
-    select: {
-      name: true,
-      slug: true,
-      images: true,
-      variants: { select: { image: true }, take: 1 },
-    },
-    orderBy: { updatedAt: "desc" },
-    take: 40,
-  });
+  const products = await getRecentPurchaseProducts();
 
   const items = products
     .map((p) => ({

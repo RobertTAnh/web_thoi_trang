@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { prisma } from "@/lib/db";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Countdown } from "@/components/store/Countdown";
 import { HomeHeroBanner, type HeroSlide } from "@/components/store/HomeHeroBanner";
@@ -8,74 +7,24 @@ import { SectionBar } from "@/components/store/SectionBar";
 import { CopyCouponButton } from "@/components/store/CopyCouponButton";
 import { HomeCategoryTabs } from "@/components/store/HomeCategoryTabs";
 import { FacebookReels } from "@/components/store/FacebookReels";
+import { getHomeCatalog } from "@/lib/catalog";
 import { formatVnd } from "@/lib/utils";
 
 const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "Tisora";
 const hotline = process.env.NEXT_PUBLIC_HOTLINE || "19006750";
 
-function priceTag(amount: number) {
-  if (amount >= 1_000_000) return `${Math.round(amount / 100_000) / 10}TR`;
-  return `${Math.round(amount / 1000)}K`;
-}
-
 export default async function HomePage() {
-  const [
+  const {
     coupons,
     flashSale,
-    hotProducts,
+    hotProducts: hot,
     newProducts,
     categories,
     categoryProducts,
     posts,
-    minPriceAgg,
+    fromPrice,
     instagramReels,
-  ] = await Promise.all([
-    prisma.coupon.findMany({ where: { active: true }, take: 4 }),
-    prisma.flashSale.findFirst({
-      where: { active: true, endsAt: { gt: new Date() } },
-      orderBy: { endsAt: "asc" },
-    }),
-    prisma.product.findMany({
-      where: { published: true, featured: true },
-      include: { variants: true },
-      take: 10,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.product.findMany({
-      where: { published: true },
-      include: { variants: true },
-      take: 10,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.category.findMany({
-      orderBy: { sortOrder: "asc" },
-      take: 8,
-    }),
-    prisma.product.findMany({
-      where: { published: true },
-      include: { variants: true },
-      take: 40,
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.blogPost.findMany({
-      where: { published: true },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-    prisma.productVariant.aggregate({
-      where: { price: { gte: 100_000 }, product: { published: true } },
-      _min: { price: true },
-    }),
-    prisma.instagramReel.findMany({
-      where: { active: true },
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-      select: { id: true, url: true },
-    }),
-  ]);
-
-  const fromPrice = minPriceAgg._min.price ?? 249_000;
-  const fromTag = priceTag(fromPrice);
-  const hot = hotProducts.length ? hotProducts : newProducts;
+  } = await getHomeCatalog();
 
   const slides: HeroSlide[] = [
     {

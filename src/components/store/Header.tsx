@@ -1,20 +1,18 @@
 import Link from "next/link";
 import { auth } from "@/lib/auth";
-import { getCart, cartTotals } from "@/lib/cart";
-import { prisma } from "@/lib/db";
+import { getCartItemCount } from "@/lib/cart";
+import { getNavCategories } from "@/lib/catalog";
 import { MobileNav } from "@/components/store/MobileNav";
 import { ScrollAwareHeader } from "@/components/store/ScrollAwareHeader";
 
 const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "Tisora";
 
 export async function Header() {
-  const session = await auth();
-  const cart = await getCart();
-  const { count } = cartTotals(cart.items);
-  const categories = await prisma.category.findMany({
-    orderBy: { sortOrder: "asc" },
-    take: 8,
-  });
+  const [session, count, categories] = await Promise.all([
+    auth(),
+    getCartItemCount(),
+    getNavCategories(),
+  ]);
 
   const accountHref = session?.user
     ? session.user.role === "ADMIN"

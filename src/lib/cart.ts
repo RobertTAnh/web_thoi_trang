@@ -13,6 +13,35 @@ const cartInclude = {
   },
 } as const;
 
+/** Badge giỏ trên Header — chỉ lấy quantity, không join product. */
+export async function getCartItemCount() {
+  const session = await auth();
+  const cookieStore = await cookies();
+  const sessionId = cookieStore.get(CART_COOKIE)?.value;
+
+  if (session?.user?.id) {
+    const cart = await prisma.cart.findFirst({
+      where: { userId: session.user.id },
+      select: { items: { select: { quantity: true } } },
+    });
+    if (cart) {
+      return cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    }
+  }
+
+  if (sessionId) {
+    const cart = await prisma.cart.findUnique({
+      where: { sessionId },
+      select: { items: { select: { quantity: true } } },
+    });
+    if (cart) {
+      return cart.items.reduce((sum, item) => sum + item.quantity, 0);
+    }
+  }
+
+  return 0;
+}
+
 /** Read-only — an toàn gọi từ Server Component (Header, pages). Không set cookie. */
 export async function getCart() {
   const session = await auth();

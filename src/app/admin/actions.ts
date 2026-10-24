@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { CATALOG_TAG } from "@/lib/catalog";
 import { requireAdminSession, generateApiKey } from "@/lib/api-auth";
 import { slugify } from "@/lib/utils";
 import { getSapoClient } from "@/lib/sapo/client";
@@ -14,9 +15,14 @@ async function ensureAdmin() {
   return session;
 }
 
+function bustCatalogCache() {
+  revalidateTag(CATALOG_TAG, "max");
+}
+
 export async function syncProductsAction() {
   await ensureAdmin();
   await syncProductsFromSapo();
+  bustCatalogCache();
   revalidatePath("/admin/products");
   revalidatePath("/admin/settings/sapo");
 }
@@ -183,6 +189,7 @@ export async function saveProductAction(formData: FormData) {
     savedId = created.id;
   }
 
+  bustCatalogCache();
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${savedId}`);
   revalidatePath("/admin/crm");
@@ -206,6 +213,7 @@ export async function importSapoExcelAction(formData: FormData) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const result = await importSapoExcelBuffer(buffer);
 
+  bustCatalogCache();
   revalidatePath("/admin/products");
   revalidatePath("/admin/categories");
   revalidatePath("/admin/crm");
@@ -229,6 +237,7 @@ export async function fixCompareAtAndStockAction() {
       "compareAt" = price,
       stock = 200
   `;
+  bustCatalogCache();
   revalidatePath("/admin/products");
   revalidatePath("/admin/crm");
   return { ok: true as const, updated: Number(updated) };
@@ -252,6 +261,7 @@ export async function beautifyAllDescriptionsAction() {
       updated += 1;
     }
   }
+  bustCatalogCache();
   revalidatePath("/admin/products");
   revalidatePath("/");
   return { ok: true as const, updated, total: products.length };
@@ -261,6 +271,7 @@ export async function deleteProductAction(formData: FormData) {
   await ensureAdmin();
   const id = String(formData.get("id") || "");
   await prisma.product.delete({ where: { id } });
+  bustCatalogCache();
   revalidatePath("/admin/products");
   redirect("/admin/products");
 }
@@ -286,6 +297,7 @@ export async function bulkDeleteProductsAction(ids: string[]) {
     };
   }
 
+  bustCatalogCache();
   revalidatePath("/admin/products");
   revalidatePath("/");
   revalidatePath("/collections", "layout");
@@ -362,6 +374,7 @@ export async function saveCouponAction(formData: FormData) {
     update: data,
     create: { code, ...data, active: data.active ?? true },
   });
+  bustCatalogCache();
   revalidatePath("/admin/coupons");
   revalidatePath("/products", "layout");
 }
@@ -371,6 +384,7 @@ export async function deleteCouponAction(formData: FormData) {
   const id = String(formData.get("id") || "");
   if (!id) return;
   await prisma.coupon.delete({ where: { id } });
+  bustCatalogCache();
   revalidatePath("/admin/coupons");
   revalidatePath("/products", "layout");
 }
@@ -395,6 +409,7 @@ export async function saveFlashSaleAction(formData: FormData) {
   } else {
     await prisma.flashSale.create({ data });
   }
+  bustCatalogCache();
   revalidatePath("/admin/flash-sales");
 }
 
@@ -413,6 +428,7 @@ export async function saveCategoryAction(formData: FormData) {
 
   if (id) await prisma.category.update({ where: { id }, data: { name, slug, image } });
   else await prisma.category.create({ data: { name, slug, image } });
+  bustCatalogCache();
   revalidatePath("/admin/categories");
   revalidatePath("/");
   revalidatePath("/collections", "layout");
@@ -432,6 +448,7 @@ export async function deleteCategoryAction(id: string) {
     };
   }
   await prisma.category.delete({ where: { id: String(id) } });
+  bustCatalogCache();
   revalidatePath("/admin/categories");
   revalidatePath("/");
   revalidatePath("/collections", "layout");
@@ -468,6 +485,7 @@ export async function saveInstagramReelAction(formData: FormData) {
   if (duplicate) throw new Error("Reel này đã có trong danh sách");
   if (id) await prisma.instagramReel.update({ where: { id }, data });
   else await prisma.instagramReel.create({ data });
+  bustCatalogCache();
   revalidatePath("/admin/instagram-reels");
   revalidatePath("/");
 }
@@ -477,6 +495,7 @@ export async function deleteInstagramReelAction(id: string) {
   const existing = await prisma.instagramReel.findUnique({ where: { id: String(id) }, select: { id: true } });
   if (!existing) return { ok: false as const, message: "Reel không còn tồn tại." };
   await prisma.instagramReel.delete({ where: { id: existing.id } });
+  bustCatalogCache();
   revalidatePath("/admin/instagram-reels");
   revalidatePath("/");
   return { ok: true as const, message: "Đã xóa Reel." };
@@ -504,6 +523,7 @@ export async function saveBlogAction(formData: FormData) {
       published: true,
     },
   });
+  bustCatalogCache();
   revalidatePath("/admin/content");
 }
 
