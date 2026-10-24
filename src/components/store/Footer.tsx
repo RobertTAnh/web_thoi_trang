@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { HOTLINE_DISPLAY, STORE_ADDRESS, hotlineTel } from "@/lib/contact";
 
 const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "Tisora";
-const hotline = process.env.NEXT_PUBLIC_HOTLINE || "19006750";
+const hotline = HOTLINE_DISPLAY;
+const tel = hotlineTel(hotline);
 
 export function Footer() {
   return (
@@ -10,12 +12,14 @@ export function Footer() {
         <div>
           <p className="text-2xl font-bold tracking-wide uppercase">{brand}</p>
           <p className="mt-4 text-[13px] leading-6 text-white/70">
-            Địa chỉ: 70 Lữ Gia, Quận 11, TP. Hồ Chí Minh
+            Địa chỉ: {STORE_ADDRESS}
           </p>
           <p className="mt-2 text-[13px] text-white/70">
-            Số điện thoại: {hotline}
+            Hotline:{" "}
+            <a href={`tel:${tel}`} className="hover:text-accent">
+              {hotline}
+            </a>
           </p>
-          <p className="text-[13px] text-white/70">Email: hello@tisora.vn</p>
         </div>
         <div>
           <h4 className="mb-4 text-[13px] font-semibold tracking-wider uppercase">
@@ -38,7 +42,7 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <a href={`tel:${hotline}`} className="hover:text-accent">
+              <a href={`tel:${tel}`} className="hover:text-accent">
                 Gọi điện đặt hàng
               </a>
             </li>

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatVnd, discountPercent } from "@/lib/utils";
 import { looksLikeHtml, sanitizeHtml } from "@/lib/html";
+import { HOTLINE_DISPLAY, hotlineTel } from "@/lib/contact";
 import { AddToCartButton } from "@/components/store/AddToCartButton";
 import { Countdown } from "@/components/store/Countdown";
 import { ProductLightbox } from "@/components/store/ProductLightbox";
@@ -442,8 +443,8 @@ export function ProductDetailClient({
 
           <p className="mt-4 text-center text-[13px] text-muted">
             Gọi đặt mua{" "}
-            <a href="tel:19006750" className="font-semibold text-accent">
-              1900.6750
+            <a href={`tel:${hotlineTel()}`} className="font-semibold text-accent">
+              {HOTLINE_DISPLAY}
             </a>{" "}
             (7:30 - 22:00)
           </p>
@@ -520,7 +521,7 @@ export function ProductDetailClient({
             <span>Nhắn tin</span>
           </a>
           <a
-            href="tel:19006750"
+            href={`tel:${hotlineTel()}`}
             className="flex w-[72px] shrink-0 flex-col items-center justify-center gap-1 text-[11px] text-accent"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current" strokeWidth="1.8">

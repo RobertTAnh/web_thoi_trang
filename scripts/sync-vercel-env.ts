@@ -74,7 +74,7 @@ setEnv("AUTH_SECRET", authSecret, envs);
 setEnv("AUTH_URL", authUrl, envs);
 setEnv("AUTH_TRUST_HOST", "true", envs);
 setEnv("NEXT_PUBLIC_BRAND_NAME", local.NEXT_PUBLIC_BRAND_NAME || "Tisora", envs);
-setEnv("NEXT_PUBLIC_HOTLINE", local.NEXT_PUBLIC_HOTLINE || "19006750", envs);
+setEnv("NEXT_PUBLIC_HOTLINE", local.NEXT_PUBLIC_HOTLINE || "0377.613.994", envs);
 
 let content = fs.readFileSync(".env.local", "utf8");
 if (!/^DIRECT_URL=/m.test(content)) {

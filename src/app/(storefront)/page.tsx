@@ -8,10 +8,12 @@ import { CopyCouponButton } from "@/components/store/CopyCouponButton";
 import { HomeCategoryTabs } from "@/components/store/HomeCategoryTabs";
 import { FacebookReels } from "@/components/store/FacebookReels";
 import { getHomeCatalog } from "@/lib/catalog";
+import { HOTLINE_DISPLAY, hotlineTel } from "@/lib/contact";
 import { formatVnd } from "@/lib/utils";
 
 const brand = process.env.NEXT_PUBLIC_BRAND_NAME || "Tisora";
-const hotline = process.env.NEXT_PUBLIC_HOTLINE || "19006750";
+const hotline = HOTLINE_DISPLAY;
+const tel = hotlineTel(hotline);
 
 export default async function HomePage() {
   const {
@@ -198,7 +200,7 @@ export default async function HomePage() {
         </div>
         <p className="mt-8 text-center text-[13px] text-muted">
           Hotline{" "}
-          <a href={`tel:${hotline}`} className="font-bold text-[#e31c23]">
+          <a href={`tel:${tel}`} className="font-bold text-[#e31c23]">
             {hotline}
           </a>
           {" · "}

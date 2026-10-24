@@ -1,4 +1,7 @@
-const hotline = process.env.NEXT_PUBLIC_HOTLINE || "19006750";
+import { HOTLINE_DISPLAY, STORE_ADDRESS, hotlineTel } from "@/lib/contact";
+
+const hotline = HOTLINE_DISPLAY;
+const tel = hotlineTel(hotline);
 
 export const metadata = { title: "Liên hệ" };
 
@@ -7,9 +10,13 @@ export default function ContactPage() {
     <div className="mx-auto max-w-3xl px-4 py-16 md:px-6">
       <h1 className="font-display text-5xl">Liên hệ</h1>
       <div className="mt-8 space-y-3 text-sm text-muted">
-        <p>Hotline: {hotline}</p>
-        <p>Email: hello@tisora.vn</p>
-        <p>Địa chỉ: 70 Lữ Gia, Quận 11, TP. Hồ Chí Minh</p>
+        <p>
+          Hotline:{" "}
+          <a href={`tel:${tel}`} className="font-medium text-ink hover:text-accent">
+            {hotline}
+          </a>
+        </p>
+        <p>Địa chỉ: {STORE_ADDRESS}</p>
       </div>
       <form className="mt-10 space-y-4">
         <input
@@ -17,8 +24,8 @@ export default function ContactPage() {
           className="w-full border border-line bg-surface px-3 py-3 text-sm"
         />
         <input
-          type="email"
-          placeholder="Email"
+          type="tel"
+          placeholder="Số điện thoại"
           className="w-full border border-line bg-surface px-3 py-3 text-sm"
         />
         <textarea
